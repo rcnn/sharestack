@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 我的</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #f8fafc;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            color: white;
+            padding: 20px 24px 40px;
+            position: relative;
+        }
+        
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .settings-btn:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFF, rgba(255,255,255,0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1E3A8A;
+            border: 3px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-details h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .user-details p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .edit-profile-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .edit-profile-btn:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.98);
+        }
+        
+        .user-stats {
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .stat-item {
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .stat-item:active {
+            transform: scale(0.95);
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .profile-content {
+            padding: 0 24px 120px;
+        }
+        
+        .subscription-card {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            border-radius: 16px;
+            padding: 20px;
+            margin: -20px 0 24px;
+            color: white;
+        }
+        
+        .subscription-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .subscription-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .upgrade-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .subscription-desc {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        
+        .subscription-progress {
+            background: rgba(255,255,255,0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 60%;
+            border-radius: 3px;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .menu-section {
+            margin-bottom: 32px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 12px;
+        }
+        
+        .menu-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-item:active {
+            background: #f8fafc;
+        }
+        
+        .menu-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+        }
+        
+        .menu-icon.reading { background: #eff6ff; color: #2563eb; }
+        .menu-icon.favorites { background: #fef2f2; color: #dc2626; }
+        .menu-icon.downloads { background: #ecfdf5; color: #059669; }
+        .menu-icon.history { background: #fef3c7; color: #d97706; }
+        .menu-icon.subscriptions { background: #f3e8ff; color: #7c3aed; }
+        .menu-icon.wallet { background: #ecfdf5; color: #10b981; }
+        .menu-icon.settings { background: #f1f5f9; color: #64748b; }
+        .menu-icon.support { background: #eff6ff; color: #3b82f6; }
+        .menu-icon.about { background: #f9fafb; color: #6b7280; }
+        
+        .menu-content {
+            flex: 1;
+        }
+        
+        .menu-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .menu-desc {
+            font-size: 13px;
+            color: #64748B;
+        }
+        
+        .menu-arrow {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        
+        .menu-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            margin-right: 8px;
+        }
+        
+        .bottom-nav {
+            height: 88px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 8px 40px 32px 40px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #1E3A8A;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="profile-header">
+                    <div class="settings-btn" onclick="openSettings()">⚙️</div>
+                    
+                    <div class="user-info">
+                        <div class="user-avatar">李</div>
+                        <div class="user-details">
+                            <h2>李明</h2>
+                            <p>资深前端工程师</p>
+                            <button class="edit-profile-btn" onclick="editProfile()">编辑资料</button>
+                        </div>
+                    </div>
+                    
+                    <div class="user-stats">
+                        <div class="stat-item" onclick="viewStat('following')">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">关注</div>
+                        </div>
+                        <div class="stat-item" onclick="viewStat('followers')">
+                            <div class="stat-value">1.2k</div>
+                            <div class="stat-label">粉丝</div>
+                        </div>
+                        <div class="stat-item" onclick="viewStat('articles')">
+                            <div class="stat-value">28</div>
+                            <div class="stat-label">文章</div>
+                        </div>
+                        <div class="stat-item" onclick="viewStat('likes')">
+                            <div class="stat-value">3.4k</div>
+                            <div class="stat-label">获赞</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-content">
+                    <div class="subscription-card">
+                        <div class="subscription-header">
+                            <div class="subscription-title">📚 我的订阅</div>
+                            <button class="upgrade-btn" onclick="upgradeSubscription()">升级</button>
+                        </div>
+                        <div class="subscription-desc">标准会员 · 有效期至 2024-04-15</div>
+                        <div class="subscription-progress">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-text">本月已阅读 18/30 篇文章</div>
+                    </div>
+                    
+                    <div class="menu-section">
+                        <div class="section-title">我的内容</div>
+                        <div class="menu-list">
+                            <div class="menu-item" onclick="openPage('reading-list')">
+                                <div class="menu-icon reading">📖</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">阅读清单</div>
+                                    <div class="menu-desc">保存的文章和稍后阅读</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                            
+                            <div class="menu-item" onclick="openPage('favorites')">
+                                <div class="menu-icon favorites">❤️</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">我的收藏</div>
+                                    <div class="menu-desc">收藏的精彩内容</div>
+                                </div>
+                                <div class="menu-badge">5</div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                            
+                            <div class="menu-item" onclick="openPage('downloads')">
+                                <div class="menu-icon downloads">📥</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">离线下载</div>
+                                    <div class="menu-desc">已下载的文章</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                            
+                            <div class="menu-item" onclick="openPage('history')">
+                                <div class="menu-icon history">🕒</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">阅读历史</div>
+                                    <div class="menu-desc">最近浏览的内容</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-section">
+                        <div class="section-title">服务</div>
+                        <div class="menu-list">
+                            <div class="menu-item" onclick="openPage('subscriptions')">
+                                <div class="menu-icon subscriptions">💎</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">我的订阅</div>
+                                    <div class="menu-desc">管理订阅服务</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                            
+                            <div class="menu-item" onclick="openPage('wallet')">
+                                <div class="menu-icon wallet">💰</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">钱包</div>
+                                    <div class="menu-desc">余额和交易记录</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="menu-section">
+                        <div class="section-title">其他</div>
+                        <div class="menu-list">
+                            <div class="menu-item" onclick="openPage('settings')">
+                                <div class="menu-icon settings">⚙️</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">设置</div>
+                                    <div class="menu-desc">个人偏好设置</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                            
+                            <div class="menu-item" onclick="openPage('support')">
+                                <div class="menu-icon support">💬</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">客服支持</div>
+                                    <div class="menu-desc">帮助和反馈</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                            
+                            <div class="menu-item" onclick="openPage('about')">
+                                <div class="menu-icon about">ℹ️</div>
+                                <div class="menu-content">
+                                    <div class="menu-title">关于我们</div>
+                                    <div class="menu-desc">版本信息和条款</div>
+                                </div>
+                                <div class="menu-arrow">→</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item" onclick="navigate('home')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">首页</div>
+                </div>
+                <div class="nav-item" onclick="navigate('discovery')">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">发现</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">我的</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openSettings() {
+            console.log('打开设置');
+            alert('打开设置页面');
+        }
+        
+        function editProfile() {
+            console.log('编辑资料');
+            alert('编辑个人资料');
+        }
+        
+        function viewStat(type) {
+            console.log('查看统计:', type);
+            const statNames = {
+                following: '关注列表',
+                followers: '粉丝列表', 
+                articles: '我的文章',
+                likes: '获赞记录'
+            };
+            alert(`查看${statNames[type]}`);
+        }
+        
+        function upgradeSubscription() {
+            console.log('升级订阅');
+            alert('升级订阅计划\n\n高级会员 ¥99/月\n• 无限文章阅读\n• 专属内容访问\n• 优先客服支持');
+        }
+        
+        function openPage(page) {
+            console.log('打开页面:', page);
+            const pageNames = {
+                'reading-list': '阅读清单',
+                'favorites': '我的收藏',
+                'downloads': '离线下载',
+                'history': '阅读历史',
+                'subscriptions': '我的订阅',
+                'wallet': '钱包',
+                'settings': '设置',
+                'support': '客服支持',
+                'about': '关于我们'
+            };
+            alert(`打开${pageNames[page]}页面`);
+        }
+        
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('导航到:', page);
+            alert(`导航到${page}页面`);
+        }
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.menu-item, .stat-item, .settings-btn, .edit-profile-btn, .upgrade-btn');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+        
+        // 统计数据动画
+        function animateStats() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(stat => {
+                const finalValue = stat.textContent;
+                stat.textContent = '0';
+                
+                let current = 0;
+                const increment = Math.ceil(parseFloat(finalValue.replace(/[^\d.]/g, '')) / 20);
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= parseFloat(finalValue.replace(/[^\d.]/g, ''))) {
+                        stat.textContent = finalValue;
+                        clearInterval(timer);
+                    } else {
+                        if (finalValue.includes('k')) {
+                            stat.textContent = (current / 1000).toFixed(1) + 'k';
+                        } else {
+                            stat.textContent = current.toString();
+                        }
+                    }
+                }, 50);
+            });
+        }
+        
+        // 页面加载完成后执行动画
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(animateStats, 500);
+        });
+    </script>
+</body>
+</html>

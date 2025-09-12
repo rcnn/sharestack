@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 设置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #f8fafc;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .settings-header {
+            background: linear-gradient(135deg, #64748B 0%, #475569 100%);
+            color: white;
+            padding: 20px 24px 40px;
+            position: relative;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 24px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .back-button:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .settings-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .settings-content {
+            padding: 24px;
+        }
+        
+        .settings-section {
+            margin-bottom: 32px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 12px;
+        }
+        
+        .settings-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+        }
+        
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-item:active {
+            background: #f8fafc;
+        }
+        
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .item-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .item-icon.profile { background: #eff6ff; color: #2563eb; }
+        .item-icon.security { background: #fef2f2; color: #dc2626; }
+        .item-icon.notification { background: #ecfdf5; color: #059669; }
+        .item-icon.privacy { background: #fef3c7; color: #d97706; }
+        .item-icon.appearance { background: #f3e8ff; color: #7c3aed; }
+        .item-icon.language { background: #ecfeff; color: #0891b2; }
+        .item-icon.storage { background: #f1f5f9; color: #64748b; }
+        .item-icon.about { background: #f9fafb; color: #6b7280; }
+        .item-icon.help { background: #eff6ff; color: #3b82f6; }
+        .item-icon.feedback { background: #fef2f2; color: #ef4444; }
+        .item-icon.logout { background: #f8fafc; color: #94a3b8; }
+        
+        .item-content {
+            flex: 1;
+        }
+        
+        .item-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .item-desc {
+            font-size: 13px;
+            color: #64748B;
+        }
+        
+        .item-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .item-value {
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .item-arrow {
+            color: #94a3b8;
+            font-size: 16px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            background: #e2e8f0;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .toggle-switch.active {
+            background: #10b981;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+        
+        .user-info-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .user-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        
+        .user-details h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .user-details p {
+            font-size: 14px;
+            color: #64748B;
+            margin-bottom: 2px;
+        }
+        
+        .user-stats {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .danger-zone {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #f1f5f9;
+        }
+        
+        .logout-btn {
+            width: 100%;
+            background: #dc2626;
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .logout-btn:active {
+            background: #b91c1c;
+            transform: translateY(2px);
+        }
+        
+        .delete-account-btn {
+            width: 100%;
+            background: transparent;
+            color: #dc2626;
+            padding: 12px;
+            border: 1px solid #dc2626;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .delete-account-btn:active {
+            background: #fef2f2;
+        }
+        
+        .version-info {
+            text-align: center;
+            margin-top: 24px;
+            padding: 16px;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        .bottom-nav {
+            height: 88px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 8px 40px 32px 40px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #1E3A8A;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="settings-header">
+                    <div class="back-button" onclick="goBack()">←</div>
+                    <div class="settings-title">设置</div>
+                </div>
+                
+                <div class="settings-content">
+                    <div class="user-info-section">
+                        <div class="user-profile">
+                            <div class="user-avatar">李</div>
+                            <div class="user-details">
+                                <h3>李明</h3>
+                                <p>资深前端工程师</p>
+                                <p>liming@example.com</p>
+                            </div>
+                        </div>
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <div class="stat-value">28</div>
+                                <div class="stat-label">文章</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">1.2k</div>
+                                <div class="stat-label">粉丝</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">¥12.5k</div>
+                                <div class="stat-label">收入</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <div class="section-title">账户设置</div>
+                        <div class="settings-list">
+                            <div class="settings-item" onclick="openSetting('profile')">
+                                <div class="item-left">
+                                    <div class="item-icon profile">👤</div>
+                                    <div class="item-content">
+                                        <div class="item-title">个人信息</div>
+                                        <div class="item-desc">修改头像、昵称、简介等</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item" onclick="openSetting('security')">
+                                <div class="item-left">
+                                    <div class="item-icon security">🔒</div>
+                                    <div class="item-content">
+                                        <div class="item-title">账户安全</div>
+                                        <div class="item-desc">密码、双因素验证</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item" onclick="openSetting('privacy')">
+                                <div class="item-left">
+                                    <div class="item-icon privacy">🛡️</div>
+                                    <div class="item-content">
+                                        <div class="item-title">隐私设置</div>
+                                        <div class="item-desc">数据权限、隐私保护</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <div class="section-title">通知设置</div>
+                        <div class="settings-list">
+                            <div class="settings-item">
+                                <div class="item-left">
+                                    <div class="item-icon notification">🔔</div>
+                                    <div class="item-content">
+                                        <div class="item-title">推送通知</div>
+                                        <div class="item-desc">新消息、系统通知</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="toggle-switch active" onclick="toggleNotification(this)"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item">
+                                <div class="item-left">
+                                    <div class="item-icon notification">📧</div>
+                                    <div class="item-content">
+                                        <div class="item-title">邮件通知</div>
+                                        <div class="item-desc">订阅更新、重要提醒</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="toggle-switch" onclick="toggleNotification(this)"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <div class="section-title">应用设置</div>
+                        <div class="settings-list">
+                            <div class="settings-item" onclick="openSetting('appearance')">
+                                <div class="item-left">
+                                    <div class="item-icon appearance">🎨</div>
+                                    <div class="item-content">
+                                        <div class="item-title">外观主题</div>
+                                        <div class="item-desc">浅色、深色、跟随系统</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-value">浅色</div>
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item" onclick="openSetting('language')">
+                                <div class="item-left">
+                                    <div class="item-icon language">🌐</div>
+                                    <div class="item-content">
+                                        <div class="item-title">语言</div>
+                                        <div class="item-desc">界面显示语言</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-value">简体中文</div>
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item" onclick="openSetting('storage')">
+                                <div class="item-left">
+                                    <div class="item-icon storage">💾</div>
+                                    <div class="item-content">
+                                        <div class="item-title">存储空间</div>
+                                        <div class="item-desc">缓存清理、离线内容</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-value">2.3 GB</div>
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <div class="section-title">帮助与反馈</div>
+                        <div class="settings-list">
+                            <div class="settings-item" onclick="openSetting('help')">
+                                <div class="item-left">
+                                    <div class="item-icon help">❓</div>
+                                    <div class="item-content">
+                                        <div class="item-title">帮助中心</div>
+                                        <div class="item-desc">使用教程、常见问题</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item" onclick="openSetting('feedback')">
+                                <div class="item-left">
+                                    <div class="item-icon feedback">💬</div>
+                                    <div class="item-content">
+                                        <div class="item-title">意见反馈</div>
+                                        <div class="item-desc">问题报告、功能建议</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-item" onclick="openSetting('about')">
+                                <div class="item-left">
+                                    <div class="item-icon about">ℹ️</div>
+                                    <div class="item-content">
+                                        <div class="item-title">关于ShareStack</div>
+                                        <div class="item-desc">版本信息、用户协议</div>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <div class="item-value">v2.1.0</div>
+                                    <div class="item-arrow">→</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="danger-zone">
+                        <button class="logout-btn" onclick="logout()">退出登录</button>
+                        <button class="delete-account-btn" onclick="deleteAccount()">删除账户</button>
+                    </div>
+                    
+                    <div class="version-info">
+                        ShareStack v2.1.0 (Build 2024031201)<br>
+                        © 2024 ShareStack Team. All rights reserved.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item" onclick="navigate('home')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">首页</div>
+                </div>
+                <div class="nav-item" onclick="navigate('discovery')">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">发现</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">我的</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function goBack() {
+            console.log('返回上一页');
+            alert('返回我的页面');
+        }
+        
+        function openSetting(type) {
+            console.log('打开设置页面:', type);
+            const settingNames = {
+                profile: '个人信息',
+                security: '账户安全',
+                privacy: '隐私设置',
+                appearance: '外观主题',
+                language: '语言设置',
+                storage: '存储空间',
+                help: '帮助中心',
+                feedback: '意见反馈',
+                about: '关于ShareStack'
+            };
+            alert(`打开${settingNames[type]}页面`);
+        }
+        
+        function toggleNotification(toggle) {
+            toggle.classList.toggle('active');
+            const isEnabled = toggle.classList.contains('active');
+            console.log('通知开关:', isEnabled ? '开启' : '关闭');
+        }
+        
+        function logout() {
+            console.log('退出登录');
+            if (confirm('确定要退出登录吗？')) {
+                alert('已退出登录，即将跳转到登录页面');
+            }
+        }
+        
+        function deleteAccount() {
+            console.log('删除账户');
+            if (confirm('⚠️ 警告：删除账户将永久删除您的所有数据，此操作不可恢复！\n\n确定要删除账户吗？')) {
+                const verification = prompt('请输入 "DELETE" 确认删除账户：');
+                if (verification === 'DELETE') {
+                    alert('账户删除申请已提交，我们将在7天内处理您的请求');
+                } else {
+                    alert('验证失败，账户删除已取消');
+                }
+            }
+        }
+        
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('导航到:', page);
+            alert(`导航到${page}页面`);
+        }
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.back-button, .settings-item, .toggle-switch, .logout-btn, .delete-account-btn');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+        
+        // 页面加载动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsItems = document.querySelectorAll('.settings-item');
+            settingsItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(20px)';
+                
+                setTimeout(() => {
+                    item.style.transition = 'all 0.3s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateX(0)';
+                }, index * 50);
+            });
+        });
+    </script>
+</body>
+</html>

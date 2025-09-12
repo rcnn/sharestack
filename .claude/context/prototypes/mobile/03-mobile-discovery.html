@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 发现</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #f8fafc;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .discovery-header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .header-title {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .header-subtitle {
+            font-size: 16px;
+            color: #64748B;
+            margin-bottom: 20px;
+        }
+        
+        .search-section {
+            position: relative;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+            margin-left: 8px;
+        }
+        
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .trending-searches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .trending-tag {
+            padding: 6px 12px;
+            background: rgba(30, 58, 138, 0.1);
+            color: #1E3A8A;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .trending-tag:active {
+            background: rgba(30, 58, 138, 0.2);
+            transform: scale(0.98);
+        }
+        
+        .content-sections {
+            padding: 24px;
+        }
+        
+        .section {
+            margin-bottom: 32px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+        
+        .see-all {
+            font-size: 14px;
+            color: #1E3A8A;
+            cursor: pointer;
+        }
+        
+        .featured-creators {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .creator-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .creator-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .creator-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 24px;
+            margin: 0 auto 12px;
+        }
+        
+        .creator-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .creator-desc {
+            font-size: 13px;
+            color: #64748B;
+            margin-bottom: 8px;
+        }
+        
+        .creator-stats {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .follow-btn {
+            background: #1E3A8A;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .follow-btn:active {
+            background: #1E40AF;
+            transform: scale(0.98);
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .category-card {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .category-card:nth-child(2) {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+        
+        .category-card:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .category-card:nth-child(4) {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+        
+        .category-card:active {
+            transform: scale(0.98);
+        }
+        
+        .category-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .category-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .category-count {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .trending-articles {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .trending-item {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .trending-item:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .trending-content {
+            padding: 16px;
+        }
+        
+        .trending-rank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #ef4444, #f97316);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 50%;
+            margin-bottom: 8px;
+        }
+        
+        .trending-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .trending-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #64748B;
+        }
+        
+        .trending-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .trending-author-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            font-size: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .trending-stats {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .bottom-nav {
+            height: 88px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 8px 40px 32px 40px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #1E3A8A;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="discovery-header">
+                    <h1 class="header-title">发现</h1>
+                    <p class="header-subtitle">探索优质内容和创作者</p>
+                    
+                    <div class="search-section">
+                        <div class="search-bar">
+                            <span>🔍</span>
+                            <input type="text" class="search-input" placeholder="搜索你感兴趣的内容...">
+                        </div>
+                        
+                        <div class="trending-searches">
+                            <div class="trending-tag" onclick="searchTag('React Native')">React Native</div>
+                            <div class="trending-tag" onclick="searchTag('AI')">AI</div>
+                            <div class="trending-tag" onclick="searchTag('创业')">创业</div>
+                            <div class="trending-tag" onclick="searchTag('投资')">投资</div>
+                            <div class="trending-tag" onclick="searchTag('设计')">设计</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-sections">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">推荐创作者</h2>
+                            <span class="see-all" onclick="seeAll('creators')">查看全部</span>
+                        </div>
+                        
+                        <div class="featured-creators">
+                            <div class="creator-card" onclick="viewCreator('1')">
+                                <div class="creator-avatar">李</div>
+                                <div class="creator-name">李明</div>
+                                <div class="creator-desc">React Native 专家</div>
+                                <div class="creator-stats">1.2k 关注者</div>
+                                <button class="follow-btn">关注</button>
+                            </div>
+                            
+                            <div class="creator-card" onclick="viewCreator('2')">
+                                <div class="creator-avatar">张</div>
+                                <div class="creator-name">张小云</div>
+                                <div class="creator-desc">产品设计师</div>
+                                <div class="creator-stats">856 关注者</div>
+                                <button class="follow-btn">关注</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">热门分类</h2>
+                            <span class="see-all" onclick="seeAll('categories')">查看全部</span>
+                        </div>
+                        
+                        <div class="categories-grid">
+                            <div class="category-card" onclick="browseCategory('tech')">
+                                <div class="category-icon">💻</div>
+                                <div class="category-name">技术</div>
+                                <div class="category-count">1,234 篇文章</div>
+                            </div>
+                            
+                            <div class="category-card" onclick="browseCategory('business')">
+                                <div class="category-icon">💼</div>
+                                <div class="category-name">商业</div>
+                                <div class="category-count">856 篇文章</div>
+                            </div>
+                            
+                            <div class="category-card" onclick="browseCategory('design')">
+                                <div class="category-icon">🎨</div>
+                                <div class="category-name">设计</div>
+                                <div class="category-count">642 篇文章</div>
+                            </div>
+                            
+                            <div class="category-card" onclick="browseCategory('finance')">
+                                <div class="category-icon">💰</div>
+                                <div class="category-name">理财</div>
+                                <div class="category-count">398 篇文章</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">热门文章</h2>
+                            <span class="see-all" onclick="seeAll('trending')">查看全部</span>
+                        </div>
+                        
+                        <div class="trending-articles">
+                            <div class="trending-item" onclick="openArticle('1')">
+                                <div class="trending-content">
+                                    <div class="trending-rank">1</div>
+                                    <div class="trending-title">React Native 开发实战指南</div>
+                                    <div class="trending-meta">
+                                        <div class="trending-author">
+                                            <div class="trending-author-avatar">李</div>
+                                            <span>李明 · 2天前</span>
+                                        </div>
+                                        <div class="trending-stats">
+                                            <span>2.3k 阅读</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="trending-item" onclick="openArticle('2')">
+                                <div class="trending-content">
+                                    <div class="trending-rank">2</div>
+                                    <div class="trending-title">创业公司如何制定产品策略</div>
+                                    <div class="trending-meta">
+                                        <div class="trending-author">
+                                            <div class="trending-author-avatar">张</div>
+                                            <span>张小云 · 3天前</span>
+                                        </div>
+                                        <div class="trending-stats">
+                                            <span>1.9k 阅读</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="trending-item" onclick="openArticle('3')">
+                                <div class="trending-content">
+                                    <div class="trending-rank">3</div>
+                                    <div class="trending-title">2024年投资趋势分析报告</div>
+                                    <div class="trending-meta">
+                                        <div class="trending-author">
+                                            <div class="trending-author-avatar">刘</div>
+                                            <span>刘投资 · 1周前</span>
+                                        </div>
+                                        <div class="trending-stats">
+                                            <span>3.2k 阅读</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item" onclick="navigate('home')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">首页</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">发现</div>
+                </div>
+                <div class="nav-item" onclick="navigate('profile')">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">我的</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function searchTag(tag) {
+            console.log('搜索标签:', tag);
+            document.querySelector('.search-input').value = tag;
+            alert(`搜索: ${tag}`);
+        }
+        
+        function viewCreator(id) {
+            console.log('查看创作者:', id);
+            alert(`查看创作者 ${id} 的个人页面`);
+        }
+        
+        function browseCategory(category) {
+            console.log('浏览分类:', category);
+            const categoryNames = {
+                tech: '技术',
+                business: '商业', 
+                design: '设计',
+                finance: '理财'
+            };
+            alert(`浏览 ${categoryNames[category]} 分类`);
+        }
+        
+        function openArticle(id) {
+            console.log('打开文章:', id);
+            alert(`打开文章 ${id}`);
+        }
+        
+        function seeAll(type) {
+            console.log('查看全部:', type);
+            const typeNames = {
+                creators: '创作者',
+                categories: '分类',
+                trending: '热门文章'
+            };
+            alert(`查看全部${typeNames[type]}`);
+        }
+        
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('导航到:', page);
+            alert(`导航到${page}页面`);
+        }
+        
+        // 关注按钮功能
+        document.querySelectorAll('.follow-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (this.textContent === '关注') {
+                    this.textContent = '已关注';
+                    this.style.background = '#f1f5f9';
+                    this.style.color = '#64748B';
+                } else {
+                    this.textContent = '关注';
+                    this.style.background = '#1E3A8A';
+                    this.style.color = 'white';
+                }
+            });
+        });
+        
+        // 搜索功能
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value;
+            if (searchTerm.length > 2) {
+                console.log('实时搜索:', searchTerm);
+            }
+        });
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.creator-card, .category-card, .trending-item, .trending-tag');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.8';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

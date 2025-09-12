@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack - 订阅者管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E3A8A;
+            margin-bottom: 8px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-details h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .user-details p {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .nav-menu {
+            padding-top: 24px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: #f1f5f9;
+            color: #1E3A8A;
+            border-right-color: #1E3A8A;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #64748B;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #64748B;
+            margin-bottom: 4px;
+        }
+        
+        .stat-trend {
+            font-size: 12px;
+            color: #059669;
+        }
+        
+        .management-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+        
+        .subscribers-table {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .search-filters {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 200px;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8fafc;
+        }
+        
+        th {
+            padding: 12px 24px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        
+        tr:hover {
+            background: #f8fafc;
+        }
+        
+        .subscriber-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .subscriber-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .subscriber-details h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .subscriber-details p {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .subscription-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-premium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .badge-standard {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        
+        .badge-free {
+            background: #f1f5f9;
+            color: #64748B;
+        }
+        
+        .action-dropdown {
+            position: relative;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .sidebar-panel {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .panel-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 16px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .activity-icon.new-sub {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        
+        .activity-icon.upgrade {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .activity-icon.cancel {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .segment-chart {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .segment {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+        }
+        
+        .segment.premium {
+            background: #d97706;
+            flex: 3;
+        }
+        
+        .segment.standard {
+            background: #2563eb;
+            flex: 5;
+        }
+        
+        .segment.free {
+            background: #64748B;
+            flex: 2;
+        }
+        
+        .segment-legend {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .retention-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .retention-metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            font-size: 13px;
+            color: #64748B;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .metric-value.good {
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">ShareStack</div>
+                <div class="user-info">
+                    <div class="user-avatar">李</div>
+                    <div class="user-details">
+                        <h3>李明</h3>
+                        <p>创作者</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="04-dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>概览</span>
+                </a>
+                <a href="05-content-editor.html" class="nav-item">
+                    <span class="nav-icon">✍️</span>
+                    <span>写文章</span>
+                </a>
+                <a href="06-content-management.html" class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    <span>内容管理</span>
+                </a>
+                <a href="07-subscription-settings.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>订阅设置</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span>订阅者</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>数据分析</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">💳</span>
+                    <span>收入报表</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">订阅者管理</h1>
+                <div class="header-actions">
+                    <button class="btn btn-outline">📧 群发邮件</button>
+                    <button class="btn btn-primary">📊 生成报告</button>
+                </div>
+            </div>
+            
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-value">1,234</div>
+                    <div class="stat-label">总订阅者</div>
+                    <div class="stat-trend">+15 本月</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">687</div>
+                    <div class="stat-label">付费订阅</div>
+                    <div class="stat-trend">+8 本月</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">85%</div>
+                    <div class="stat-label">续费率</div>
+                    <div class="stat-trend">+2% 上月</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">¥68</div>
+                    <div class="stat-label">平均客单价</div>
+                    <div class="stat-trend">+¥5 上月</div>
+                </div>
+            </div>
+            
+            <div class="management-grid">
+                <div class="subscribers-table">
+                    <div class="table-header">
+                        <h3 class="table-title">订阅者列表</h3>
+                        <div class="search-filters">
+                            <input type="text" class="search-input" placeholder="搜索订阅者...">
+                            <select class="filter-select">
+                                <option value="">全部订阅</option>
+                                <option value="premium">高级订阅</option>
+                                <option value="standard">标准订阅</option>
+                                <option value="free">免费订阅</option>
+                            </select>
+                            <select class="filter-select">
+                                <option value="">全部状态</option>
+                                <option value="active">活跃</option>
+                                <option value="expired">已过期</option>
+                                <option value="cancelled">已取消</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>订阅者</th>
+                                <th>订阅类型</th>
+                                <th>开始时间</th>
+                                <th>到期时间</th>
+                                <th>月费</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="subscriber-info">
+                                        <div class="subscriber-avatar">张</div>
+                                        <div class="subscriber-details">
+                                            <h4>张小明</h4>
+                                            <p>zhang@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="subscription-badge badge-premium">高级订阅</span></td>
+                                <td>2024-01-15</td>
+                                <td>2024-04-15</td>
+                                <td>¥99</td>
+                                <td>🟢 活跃</td>
+                                <td>
+                                    <div class="action-dropdown">
+                                        <button class="action-btn" onclick="showActions('1')">操作 ▼</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div class="subscriber-info">
+                                        <div class="subscriber-avatar">李</div>
+                                        <div class="subscriber-details">
+                                            <h4>李华</h4>
+                                            <p>lihua@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="subscription-badge badge-standard">标准订阅</span></td>
+                                <td>2023-12-01</td>
+                                <td>2024-03-01</td>
+                                <td>¥29</td>
+                                <td>🟢 活跃</td>
+                                <td>
+                                    <div class="action-dropdown">
+                                        <button class="action-btn" onclick="showActions('2')">操作 ▼</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div class="subscriber-info">
+                                        <div class="subscriber-avatar">王</div>
+                                        <div class="subscriber-details">
+                                            <h4>王丽</h4>
+                                            <p>wangli@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="subscription-badge badge-free">免费订阅</span></td>
+                                <td>2024-01-20</td>
+                                <td>-</td>
+                                <td>¥0</td>
+                                <td>🟢 活跃</td>
+                                <td>
+                                    <div class="action-dropdown">
+                                        <button class="action-btn" onclick="showActions('3')">操作 ▼</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div class="subscriber-info">
+                                        <div class="subscriber-avatar">陈</div>
+                                        <div class="subscriber-details">
+                                            <h4>陈强</h4>
+                                            <p>chenqiang@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="subscription-badge badge-standard">标准订阅</span></td>
+                                <td>2023-11-15</td>
+                                <td>2024-02-15</td>
+                                <td>¥29</td>
+                                <td>🔴 已过期</td>
+                                <td>
+                                    <div class="action-dropdown">
+                                        <button class="action-btn" onclick="showActions('4')">操作 ▼</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            
+                            <tr>
+                                <td>
+                                    <div class="subscriber-info">
+                                        <div class="subscriber-avatar">刘</div>
+                                        <div class="subscriber-details">
+                                            <h4>刘德华</h4>
+                                            <p>liudehua@example.com</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="subscription-badge badge-premium">高级订阅</span></td>
+                                <td>2023-10-01</td>
+                                <td>2024-10-01</td>
+                                <td>¥99</td>
+                                <td>🟢 活跃</td>
+                                <td>
+                                    <div class="action-dropdown">
+                                        <button class="action-btn" onclick="showActions('5')">操作 ▼</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="sidebar-panel">
+                    <div class="panel-card">
+                        <h3 class="panel-title">订阅类型分布</h3>
+                        <div class="segment-chart">
+                            <div class="segment premium"></div>
+                            <div class="segment standard"></div>
+                            <div class="segment free"></div>
+                        </div>
+                        <div class="segment-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #d97706;"></div>
+                                <span>高级订阅 (30%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #2563eb;"></div>
+                                <span>标准订阅 (50%)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot" style="background: #64748B;"></div>
+                                <span>免费订阅 (20%)</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-card">
+                        <h3 class="panel-title">最近活动</h3>
+                        <div class="activity-item">
+                            <div class="activity-icon new-sub">👤</div>
+                            <div class="activity-content">
+                                <div class="activity-title">张小明 升级到高级订阅</div>
+                                <div class="activity-time">2小时前</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon upgrade">⬆️</div>
+                            <div class="activity-content">
+                                <div class="activity-title">李华 续费标准订阅</div>
+                                <div class="activity-time">5小时前</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon cancel">❌</div>
+                            <div class="activity-content">
+                                <div class="activity-title">王丽 取消自动续费</div>
+                                <div class="activity-time">1天前</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon new-sub">👤</div>
+                            <div class="activity-content">
+                                <div class="activity-title">3位新用户注册</div>
+                                <div class="activity-time">2天前</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="panel-card">
+                        <h3 class="panel-title">留存数据</h3>
+                        <div class="retention-metric">
+                            <span class="metric-label">7天留存率</span>
+                            <span class="metric-value good">92%</span>
+                        </div>
+                        <div class="retention-metric">
+                            <span class="metric-label">30天留存率</span>
+                            <span class="metric-value good">78%</span>
+                        </div>
+                        <div class="retention-metric">
+                            <span class="metric-label">90天留存率</span>
+                            <span class="metric-value">65%</span>
+                        </div>
+                        <div class="retention-metric">
+                            <span class="metric-label">平均生命周期</span>
+                            <span class="metric-value">8.5个月</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function showActions(subscriberId) {
+            const actions = [
+                '发送消息',
+                '查看详情',
+                '修改订阅',
+                '暂停订阅',
+                '删除订阅者'
+            ];
+            
+            const actionList = actions.map(action => `• ${action}`).join('\n');
+            alert(`订阅者操作选项：\n${actionList}\n\n(实际项目中这里应该是下拉菜单)`);
+        }
+        
+        // 搜索功能
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const subscriberName = row.querySelector('.subscriber-details h4').textContent.toLowerCase();
+                const subscriberEmail = row.querySelector('.subscriber-details p').textContent.toLowerCase();
+                
+                if (subscriberName.includes(searchTerm) || subscriberEmail.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // 筛选功能
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                console.log('筛选条件变更:', this.value);
+                // 实际项目中这里应该实现筛选逻辑
+            });
+        });
+        
+        // 群发邮件功能
+        document.querySelector('.header-actions .btn-outline').addEventListener('click', function() {
+            const result = confirm('确定要给所有订阅者群发邮件吗？');
+            if (result) {
+                alert('邮件发送功能开发中...');
+            }
+        });
+        
+        // 生成报告功能
+        document.querySelector('.header-actions .btn-primary').addEventListener('click', function() {
+            alert('正在生成订阅者分析报告...\n\n报告将包含：\n• 订阅趋势分析\n• 用户行为统计\n• 收入贡献分析\n• 留存率详情');
+        });
+    </script>
+</body>
+</html>

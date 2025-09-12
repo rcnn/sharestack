@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: white;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .register-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px 24px 40px;
+            text-align: center;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 24px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .back-button:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .register-logo {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        
+        .register-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .register-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .register-form {
+            padding: 32px 24px;
+        }
+        
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+        
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            transition: all 0.3s;
+        }
+        
+        .progress-dot.active {
+            background: #10b981;
+            transform: scale(1.2);
+        }
+        
+        .step-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E293B;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .step-desc {
+            font-size: 14px;
+            color: #64748B;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #10b981;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .form-input.error {
+            border-color: #ef4444;
+        }
+        
+        .form-input.success {
+            border-color: #10b981;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #9ca3af;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #9ca3af;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:active {
+            color: #10b981;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .success-message {
+            color: #10b981;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+        
+        .password-strength {
+            margin-top: 8px;
+        }
+        
+        .strength-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+        
+        .strength-weak { background: #ef4444; }
+        .strength-medium { background: #f59e0b; }
+        .strength-strong { background: #10b981; }
+        
+        .strength-text {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .user-type-selection {
+            margin-bottom: 24px;
+        }
+        
+        .type-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .type-option {
+            padding: 20px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .type-option.selected {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+        
+        .type-option:active {
+            transform: scale(0.98);
+        }
+        
+        .type-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .type-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .type-desc {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .agreement-section {
+            margin-bottom: 24px;
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .checkbox.checked {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .agreement-text {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.5;
+        }
+        
+        .agreement-link {
+            color: #10b981;
+            cursor: pointer;
+        }
+        
+        .register-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+        
+        .register-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+        
+        .register-button:disabled {
+            background: #9ca3af;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        .login-prompt {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .login-link {
+            color: #10b981;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .login-link:active {
+            opacity: 0.7;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutLeft {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(-100%); opacity: 0; }
+        }
+        
+        .step-content {
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .step-content.slide-out {
+            animation: slideOutLeft 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="register-header">
+                    <div class="back-button" onclick="goBack()">←</div>
+                    <div class="register-logo">ShareStack</div>
+                    <div class="register-title">创建账户</div>
+                    <div class="register-subtitle">开始你的知识分享之旅</div>
+                </div>
+                
+                <div class="register-form">
+                    <div class="progress-indicator">
+                        <div class="progress-dot active"></div>
+                        <div class="progress-dot"></div>
+                        <div class="progress-dot"></div>
+                    </div>
+                    
+                    <div class="step-content" id="stepContent">
+                        <!-- Step 1: 用户类型选择 -->
+                        <div class="step" id="step1">
+                            <h2 class="step-title">选择身份</h2>
+                            <p class="step-desc">告诉我们你想如何使用 ShareStack</p>
+                            
+                            <div class="user-type-selection">
+                                <div class="type-options">
+                                    <div class="type-option" onclick="selectUserType('reader', this)">
+                                        <div class="type-icon">📚</div>
+                                        <div class="type-title">读者</div>
+                                        <div class="type-desc">阅读优质内容<br>关注喜欢的创作者</div>
+                                    </div>
+                                    
+                                    <div class="type-option" onclick="selectUserType('creator', this)">
+                                        <div class="type-icon">✍️</div>
+                                        <div class="type-title">创作者</div>
+                                        <div class="type-desc">分享知识内容<br>获得订阅收入</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="register-button" onclick="nextStep()" disabled id="step1Btn">继续</button>
+                        </div>
+                        
+                        <!-- Step 2: 基本信息 -->
+                        <div class="step" id="step2" style="display: none;">
+                            <h2 class="step-title">基本信息</h2>
+                            <p class="step-desc">填写你的基本信息</p>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="name">姓名</label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">👤</span>
+                                    <input 
+                                        type="text" 
+                                        id="name" 
+                                        class="form-input" 
+                                        placeholder="请输入真实姓名"
+                                        oninput="validateName()"
+                                    >
+                                </div>
+                                <div class="error-message" id="nameError">请输入有效的姓名</div>
+                                <div class="success-message" id="nameSuccess">姓名格式正确</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="email">邮箱地址</label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">📧</span>
+                                    <input 
+                                        type="email" 
+                                        id="email" 
+                                        class="form-input" 
+                                        placeholder="请输入邮箱地址"
+                                        oninput="validateEmail()"
+                                    >
+                                </div>
+                                <div class="error-message" id="emailError">请输入有效的邮箱地址</div>
+                                <div class="success-message" id="emailSuccess">邮箱地址可用</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="phone">手机号码</label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">📱</span>
+                                    <input 
+                                        type="tel" 
+                                        id="phone" 
+                                        class="form-input" 
+                                        placeholder="请输入手机号码"
+                                        oninput="validatePhone()"
+                                    >
+                                </div>
+                                <div class="error-message" id="phoneError">请输入有效的手机号码</div>
+                                <div class="success-message" id="phoneSuccess">手机号码格式正确</div>
+                            </div>
+                            
+                            <button class="register-button" onclick="nextStep()" disabled id="step2Btn">继续</button>
+                            <button class="register-button" onclick="prevStep()" style="background: #f1f5f9; color: #64748B; margin-top: -16px; margin-bottom: 24px;">上一步</button>
+                        </div>
+                        
+                        <!-- Step 3: 密码设置 -->
+                        <div class="step" id="step3" style="display: none;">
+                            <h2 class="step-title">设置密码</h2>
+                            <p class="step-desc">创建一个安全的密码</p>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="password">密码</label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">🔒</span>
+                                    <input 
+                                        type="password" 
+                                        id="password" 
+                                        class="form-input" 
+                                        placeholder="请输入密码"
+                                        oninput="validatePassword()"
+                                    >
+                                    <span class="password-toggle" onclick="togglePassword('password')">👁️</span>
+                                </div>
+                                <div class="password-strength">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill" id="strengthBar"></div>
+                                    </div>
+                                    <div class="strength-text" id="strengthText">密码强度: 请输入密码</div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="confirmPassword">确认密码</label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">🔒</span>
+                                    <input 
+                                        type="password" 
+                                        id="confirmPassword" 
+                                        class="form-input" 
+                                        placeholder="请再次输入密码"
+                                        oninput="validateConfirmPassword()"
+                                    >
+                                    <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+                                </div>
+                                <div class="error-message" id="confirmPasswordError">两次输入的密码不一致</div>
+                                <div class="success-message" id="confirmPasswordSuccess">密码确认正确</div>
+                            </div>
+                            
+                            <div class="agreement-section">
+                                <div class="checkbox-wrapper" onclick="toggleAgreement()">
+                                    <div class="checkbox" id="agreementCheckbox"></div>
+                                    <div class="agreement-text">
+                                        我已阅读并同意 <span class="agreement-link" onclick="showTerms(event)">服务条款</span> 和 <span class="agreement-link" onclick="showPrivacy(event)">隐私政策</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="register-button" onclick="submitRegistration()" disabled id="step3Btn">创建账户</button>
+                            <button class="register-button" onclick="prevStep()" style="background: #f1f5f9; color: #64748B; margin-top: -16px; margin-bottom: 24px;">上一步</button>
+                        </div>
+                    </div>
+                    
+                    <div class="login-prompt">
+                        已有账户？
+                        <span class="login-link" onclick="goToLogin()">立即登录</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentStep = 1;
+        let selectedUserType = null;
+        let isAgreementChecked = false;
+        let formData = {};
+        
+        function goBack() {
+            console.log('返回上一页');
+            alert('返回首页');
+        }
+        
+        function selectUserType(type, element) {
+            document.querySelectorAll('.type-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedUserType = type;
+            
+            document.getElementById('step1Btn').disabled = false;
+            console.log('选择用户类型:', type);
+        }
+        
+        function nextStep() {
+            if (currentStep < 3) {
+                const currentStepEl = document.getElementById(`step${currentStep}`);
+                currentStepEl.style.display = 'none';
+                
+                currentStep++;
+                const nextStepEl = document.getElementById(`step${currentStep}`);
+                nextStepEl.style.display = 'block';
+                
+                updateProgressIndicator();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                const currentStepEl = document.getElementById(`step${currentStep}`);
+                currentStepEl.style.display = 'none';
+                
+                currentStep--;
+                const prevStepEl = document.getElementById(`step${currentStep}`);
+                prevStepEl.style.display = 'block';
+                
+                updateProgressIndicator();
+            }
+        }
+        
+        function updateProgressIndicator() {
+            const dots = document.querySelectorAll('.progress-dot');
+            dots.forEach((dot, index) => {
+                if (index < currentStep) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        function validateName() {
+            const name = document.getElementById('name').value;
+            const input = document.getElementById('name');
+            const error = document.getElementById('nameError');
+            const success = document.getElementById('nameSuccess');
+            
+            if (name.length < 2) {
+                input.classList.add('error');
+                input.classList.remove('success');
+                error.style.display = 'block';
+                success.style.display = 'none';
+                return false;
+            } else {
+                input.classList.remove('error');
+                input.classList.add('success');
+                error.style.display = 'none';
+                success.style.display = 'block';
+                return true;
+            }
+        }
+        
+        function validateEmail() {
+            const email = document.getElementById('email').value;
+            const input = document.getElementById('email');
+            const error = document.getElementById('emailError');
+            const success = document.getElementById('emailSuccess');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(email)) {
+                input.classList.add('error');
+                input.classList.remove('success');
+                error.style.display = 'block';
+                success.style.display = 'none';
+                return false;
+            } else {
+                input.classList.remove('error');
+                input.classList.add('success');
+                error.style.display = 'none';
+                success.style.display = 'block';
+                return true;
+            }
+        }
+        
+        function validatePhone() {
+            const phone = document.getElementById('phone').value;
+            const input = document.getElementById('phone');
+            const error = document.getElementById('phoneError');
+            const success = document.getElementById('phoneSuccess');
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            
+            if (!phoneRegex.test(phone)) {
+                input.classList.add('error');
+                input.classList.remove('success');
+                error.style.display = 'block';
+                success.style.display = 'none';
+                return false;
+            } else {
+                input.classList.remove('error');
+                input.classList.add('success');
+                error.style.display = 'none';
+                success.style.display = 'block';
+                return true;
+            }
+        }
+        
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+            
+            let strength = 0;
+            let strengthLabel = '';
+            
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+            
+            const strengthPercentage = (strength / 5) * 100;
+            strengthBar.style.width = strengthPercentage + '%';
+            
+            if (strength < 2) {
+                strengthBar.className = 'strength-fill strength-weak';
+                strengthLabel = '弱';
+            } else if (strength < 4) {
+                strengthBar.className = 'strength-fill strength-medium';
+                strengthLabel = '中';
+            } else {
+                strengthBar.className = 'strength-fill strength-strong';
+                strengthLabel = '强';
+            }
+            
+            strengthText.textContent = `密码强度: ${strengthLabel}`;
+            
+            if (document.getElementById('confirmPassword').value) {
+                validateConfirmPassword();
+            }
+            
+            checkStep3Validity();
+            return strength >= 3;
+        }
+        
+        function validateConfirmPassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const input = document.getElementById('confirmPassword');
+            const error = document.getElementById('confirmPasswordError');
+            const success = document.getElementById('confirmPasswordSuccess');
+            
+            if (password !== confirmPassword) {
+                input.classList.add('error');
+                input.classList.remove('success');
+                error.style.display = 'block';
+                success.style.display = 'none';
+                checkStep3Validity();
+                return false;
+            } else {
+                input.classList.remove('error');
+                input.classList.add('success');
+                error.style.display = 'none';
+                success.style.display = 'block';
+                checkStep3Validity();
+                return true;
+            }
+        }
+        
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const toggle = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
+        
+        function toggleAgreement() {
+            const checkbox = document.getElementById('agreementCheckbox');
+            isAgreementChecked = !isAgreementChecked;
+            
+            if (isAgreementChecked) {
+                checkbox.classList.add('checked');
+                checkbox.textContent = '✓';
+            } else {
+                checkbox.classList.remove('checked');
+                checkbox.textContent = '';
+            }
+            
+            checkStep3Validity();
+        }
+        
+        function checkStep3Validity() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const step3Btn = document.getElementById('step3Btn');
+            
+            const isPasswordValid = password.length >= 8;
+            const isConfirmValid = password === confirmPassword && confirmPassword.length > 0;
+            
+            step3Btn.disabled = !(isPasswordValid && isConfirmValid && isAgreementChecked);
+        }
+        
+        function checkStep2Validity() {
+            const step2Btn = document.getElementById('step2Btn');
+            const isValid = validateName() && validateEmail() && validatePhone();
+            step2Btn.disabled = !isValid;
+        }
+        
+        // 监听第二步的输入变化
+        document.addEventListener('DOMContentLoaded', function() {
+            const step2Inputs = ['name', 'email', 'phone'];
+            step2Inputs.forEach(inputId => {
+                document.getElementById(inputId)?.addEventListener('input', checkStep2Validity);
+            });
+        });
+        
+        function submitRegistration() {
+            console.log('提交注册');
+            
+            const formData = {
+                userType: selectedUserType,
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: document.getElementById('password').value
+            };
+            
+            const submitBtn = document.getElementById('step3Btn');
+            submitBtn.textContent = '创建中...';
+            submitBtn.disabled = true;
+            
+            // 模拟注册过程
+            setTimeout(() => {
+                alert('恭喜！账户创建成功\n\n欢迎加入 ShareStack 社区\n即将跳转到首页');
+                console.log('注册数据:', formData);
+            }, 2000);
+        }
+        
+        function showTerms(event) {
+            event.stopPropagation();
+            alert('服务条款\n\n这里显示详细的服务条款内容...');
+        }
+        
+        function showPrivacy(event) {
+            event.stopPropagation();
+            alert('隐私政策\n\n这里显示详细的隐私政策内容...');
+        }
+        
+        function goToLogin() {
+            console.log('跳转登录页面');
+            alert('跳转到登录页面');
+        }
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.type-option, .register-button, .back-button, .login-link, .checkbox-wrapper');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

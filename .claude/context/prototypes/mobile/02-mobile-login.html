@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #ffffff 50%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .login-header {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 40px 20px 20px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .back-button:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .logo-large {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        
+        .welcome-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            opacity: 0.95;
+        }
+        
+        .welcome-desc {
+            font-size: 14px;
+            opacity: 0.8;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .login-form {
+            flex: 2;
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 32px 24px 24px;
+            margin-top: -12px;
+        }
+        
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E293B;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        
+        .form-subtitle {
+            font-size: 14px;
+            color: #64748B;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px 16px 16px 48px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #1E3A8A;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+            color: #9ca3af;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 18px;
+            color: #9ca3af;
+            transition: color 0.2s;
+        }
+        
+        .password-toggle:active {
+            color: #1E3A8A;
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 24px;
+        }
+        
+        .forgot-link {
+            font-size: 14px;
+            color: #1E3A8A;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .forgot-link:active {
+            opacity: 0.7;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+        
+        .login-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+        }
+        
+        .login-button:disabled {
+            background: #9ca3af;
+            transform: none;
+            cursor: not-allowed;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+        
+        .divider span {
+            padding: 0 16px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .social-login {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            background: white;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .social-btn:active {
+            background: #f8fafc;
+            transform: translateY(1px);
+        }
+        
+        .social-btn.wechat {
+            color: #07c160;
+            border-color: #07c160;
+        }
+        
+        .social-btn.apple {
+            color: #000;
+            border-color: #000;
+        }
+        
+        .register-prompt {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .register-link {
+            color: #1E3A8A;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .register-link:active {
+            opacity: 0.7;
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #fecaca;
+            display: none;
+        }
+        
+        .success-message {
+            background: #f0fdf4;
+            color: #166534;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            border: 1px solid #bbf7d0;
+            display: none;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="login-header">
+                    <div class="back-button" onclick="goBack()">←</div>
+                    <div class="logo-large">ShareStack</div>
+                    <div class="welcome-text">欢迎回来</div>
+                    <div class="welcome-desc">登录账户，继续你的知识之旅</div>
+                </div>
+                
+                <div class="login-form">
+                    <h2 class="form-title">登录</h2>
+                    <p class="form-subtitle">输入你的账户信息</p>
+                    
+                    <div class="error-message" id="errorMessage">
+                        用户名或密码错误，请重试
+                    </div>
+                    
+                    <div class="success-message" id="successMessage">
+                        登录成功！正在跳转...
+                    </div>
+                    
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="email">邮箱地址</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">📧</span>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    class="form-input" 
+                                    placeholder="请输入邮箱地址"
+                                    value="user@example.com"
+                                    required
+                                >
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="password">密码</label>
+                            <div class="input-wrapper">
+                                <span class="input-icon">🔒</span>
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    class="form-input" 
+                                    placeholder="请输入密码"
+                                    value="password123"
+                                    required
+                                >
+                                <span class="password-toggle" onclick="togglePassword()">👁️</span>
+                            </div>
+                        </div>
+                        
+                        <div class="forgot-password">
+                            <span class="forgot-link" onclick="forgotPassword()">忘记密码？</span>
+                        </div>
+                        
+                        <button type="submit" class="login-button" id="loginButton">
+                            登录
+                        </button>
+                    </form>
+                    
+                    <div class="divider">
+                        <span>或者使用</span>
+                    </div>
+                    
+                    <div class="social-login">
+                        <button class="social-btn wechat" onclick="socialLogin('wechat')">
+                            <span>💬</span>
+                            <span>微信登录</span>
+                        </button>
+                        <button class="social-btn apple" onclick="socialLogin('apple')">
+                            <span>🍎</span>
+                            <span>Apple ID登录</span>
+                        </button>
+                    </div>
+                    
+                    <div class="register-prompt">
+                        还没有账户？
+                        <span class="register-link" onclick="goToRegister()">立即注册</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function goBack() {
+            console.log('返回上一页');
+            alert('返回首页');
+        }
+        
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggle = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
+        
+        function forgotPassword() {
+            console.log('忘记密码');
+            alert('忘记密码功能\n\n将会发送重置链接到您的邮箱');
+        }
+        
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginButton = document.getElementById('loginButton');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            
+            // 隐藏之前的消息
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // 禁用按钮并显示加载状态
+            loginButton.textContent = '登录中...';
+            loginButton.disabled = true;
+            
+            // 模拟网络请求
+            setTimeout(() => {
+                if (email === 'user@example.com' && password === 'password123') {
+                    // 登录成功
+                    successMessage.style.display = 'block';
+                    successMessage.textContent = '登录成功！正在跳转...';
+                    
+                    setTimeout(() => {
+                        alert('登录成功！\n\n即将跳转到主页');
+                    }, 1500);
+                } else {
+                    // 登录失败
+                    errorMessage.style.display = 'block';
+                    errorMessage.textContent = '用户名或密码错误，请重试';
+                    
+                    // 添加震动效果
+                    document.querySelector('.login-form').classList.add('shake');
+                    setTimeout(() => {
+                        document.querySelector('.login-form').classList.remove('shake');
+                    }, 500);
+                }
+                
+                // 恢复按钮状态
+                loginButton.textContent = '登录';
+                loginButton.disabled = false;
+            }, 1500);
+        }
+        
+        function socialLogin(platform) {
+            const platformNames = {
+                wechat: '微信',
+                apple: 'Apple ID'
+            };
+            
+            console.log('社交登录:', platform);
+            alert(`使用 ${platformNames[platform]} 登录\n\n正在跳转到授权页面...`);
+        }
+        
+        function goToRegister() {
+            console.log('跳转注册页面');
+            alert('跳转到注册页面');
+        }
+        
+        // 表单验证
+        const inputs = document.querySelectorAll('.form-input');
+        inputs.forEach(input => {
+            input.addEventListener('blur', validateInput);
+            input.addEventListener('input', clearErrors);
+        });
+        
+        function validateInput(event) {
+            const input = event.target;
+            const wrapper = input.closest('.form-group');
+            
+            // 移除之前的错误样式
+            input.style.borderColor = '';
+            
+            if (!input.value.trim()) {
+                input.style.borderColor = '#ef4444';
+                return false;
+            }
+            
+            if (input.type === 'email' && !isValidEmail(input.value)) {
+                input.style.borderColor = '#ef4444';
+                return false;
+            }
+            
+            input.style.borderColor = '#10b981';
+            return true;
+        }
+        
+        function clearErrors(event) {
+            const input = event.target;
+            input.style.borderColor = '';
+            
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // 阻止长按选择文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.login-button, .social-btn, .back-button, .forgot-link, .register-link');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+        
+        // 键盘快捷键 (用于测试)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>

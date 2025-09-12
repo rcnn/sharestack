@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack - React Native 开发实战指南</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: #374151;
+            background-color: #fafafa;
+        }
+        
+        .header {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1E3A8A;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 32px;
+        }
+        
+        .nav-item {
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-item:hover {
+            color: #1E3A8A;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #64748B;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn-primary {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .article-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            background: white;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .article-header {
+            margin-bottom: 40px;
+        }
+        
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .author-details h4 {
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .author-details p {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .article-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1E293B;
+            line-height: 1.3;
+            margin-bottom: 16px;
+        }
+        
+        .article-excerpt {
+            font-size: 18px;
+            color: #64748B;
+            line-height: 1.6;
+        }
+        
+        .article-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 24px 0;
+        }
+        
+        .tag {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .article-actions {
+            display: flex;
+            gap: 12px;
+            padding: 20px 0;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 40px;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .action-btn:hover {
+            border-color: #1E3A8A;
+            color: #1E3A8A;
+        }
+        
+        .action-btn.liked {
+            background: #fef2f2;
+            border-color: #fecaca;
+            color: #dc2626;
+        }
+        
+        .article-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #374151;
+        }
+        
+        .article-content h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1E293B;
+            margin: 40px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .article-content h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1E293B;
+            margin: 32px 0 16px 0;
+        }
+        
+        .article-content p {
+            margin-bottom: 20px;
+        }
+        
+        .article-content ul, .article-content ol {
+            margin: 16px 0 16px 24px;
+        }
+        
+        .article-content li {
+            margin-bottom: 8px;
+        }
+        
+        .article-content code {
+            background: #f1f5f9;
+            color: #e11d48;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', Monaco, monospace;
+            font-size: 14px;
+        }
+        
+        .article-content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Fira Code', Monaco, monospace;
+            line-height: 1.5;
+        }
+        
+        .article-content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        
+        .article-content blockquote {
+            border-left: 4px solid #1E3A8A;
+            padding-left: 20px;
+            margin: 20px 0;
+            color: #64748B;
+            font-style: italic;
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .article-footer {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 2px solid #f1f5f9;
+        }
+        
+        .article-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 40px;
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .author-card {
+            background: #f8fafc;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+        
+        .author-card-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .author-card-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        
+        .author-card-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .author-card-info p {
+            color: #64748B;
+            margin-bottom: 8px;
+        }
+        
+        .author-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .author-bio {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .subscribe-cta {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .subscribe-cta h3 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .subscribe-cta p {
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .subscribe-btn {
+            background: white;
+            color: #1E3A8A;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .subscribe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .related-articles {
+            margin-top: 60px;
+        }
+        
+        .related-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .related-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .related-item:hover {
+            border-color: #1E3A8A;
+            transform: translateY(-2px);
+        }
+        
+        .related-item h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .related-item p {
+            color: #64748B;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .related-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">ShareStack</div>
+            <ul class="nav-menu">
+                <li><a href="01-homepage.html" class="nav-item">首页</a></li>
+                <li><a href="#" class="nav-item">发现</a></li>
+                <li><a href="#" class="nav-item">热门</a></li>
+                <li><a href="#" class="nav-item">分类</a></li>
+            </ul>
+            <div class="user-menu">
+                <div class="user-avatar">李</div>
+                <a href="04-dashboard.html" class="btn btn-outline">后台</a>
+            </div>
+        </nav>
+    </header>
+    
+    <article class="article-container">
+        <div class="article-header">
+            <div class="article-meta">
+                <div class="author-info">
+                    <div class="author-avatar">李</div>
+                    <div class="author-details">
+                        <h4>李明</h4>
+                        <p>资深全栈工程师</p>
+                    </div>
+                </div>
+                <span>•</span>
+                <span>2024年1月10日</span>
+                <span>•</span>
+                <span>15分钟阅读</span>
+            </div>
+            
+            <h1 class="article-title">React Native 开发实战指南</h1>
+            <p class="article-excerpt">
+                React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始，带你了解 React Native 开发的各个方面。
+            </p>
+            
+            <div class="article-tags">
+                <span class="tag">React Native</span>
+                <span class="tag">移动开发</span>
+                <span class="tag">教程</span>
+                <span class="tag">实战</span>
+            </div>
+            
+            <div class="article-actions">
+                <button class="action-btn liked" onclick="toggleLike()">
+                    ❤️ <span id="like-count">128</span>
+                </button>
+                <button class="action-btn" onclick="toggleBookmark()">
+                    🔖 收藏
+                </button>
+                <button class="action-btn" onclick="shareArticle()">
+                    🔗 分享
+                </button>
+                <button class="action-btn" onclick="showComments()">
+                    💬 23 评论
+                </button>
+            </div>
+        </div>
+        
+        <div class="article-content">
+            <h2>前言</h2>
+            <p>
+                React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始，带你了解 React Native 开发的各个方面。
+            </p>
+            
+            <h2>环境搭建</h2>
+            <p>首先，我们需要搭建开发环境：</p>
+            
+            <pre><code>npm install -g @react-native-community/cli
+npx react-native init MyProject</code></pre>
+            
+            <h3>开发工具推荐</h3>
+            <ul>
+                <li><strong>VS Code</strong> - 强大的代码编辑器</li>
+                <li><strong>Flipper</strong> - 调试工具</li>
+                <li><strong>Reactotron</strong> - 状态管理调试</li>
+            </ul>
+            
+            <h2>核心概念</h2>
+            
+            <h3>组件生命周期</h3>
+            <p>React Native 组件具有以下主要生命周期方法：</p>
+            <ul>
+                <li><code>componentDidMount()</code> - 组件挂载后调用</li>
+                <li><code>componentWillUnmount()</code> - 组件卸载前调用</li>
+                <li><code>useEffect()</code> - Hook 版本的生命周期管理</li>
+            </ul>
+            
+            <blockquote>
+                <strong>提示</strong>: 使用 Hooks 可以让代码更简洁和易于维护。
+            </blockquote>
+            
+            <h2>实战项目</h2>
+            <p>让我们创建一个简单的待办事项应用：</p>
+            
+            <pre><code>import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList } from 'react-native';
+
+const TodoApp = () => {
+  const [todos, setTodos] = useState([]);
+  const [inputText, setInputText] = useState('');
+
+  const addTodo = () => {
+    if (inputText.trim()) {
+      setTodos([...todos, { id: Date.now(), text: inputText, completed: false }]);
+      setInputText('');
+    }
+  };
+
+  return (
+    &lt;View style={{ flex: 1, padding: 20 }}&gt;
+      &lt;Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}&gt;
+        待办事项
+      &lt;/Text&gt;
+      
+      &lt;View style={{ flexDirection: 'row', marginBottom: 20 }}&gt;
+        &lt;TextInput
+          style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: '#ccc',
+            padding: 10,
+            marginRight: 10,
+            borderRadius: 5
+          }}
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder="添加新任务..."
+        /&gt;
+        &lt;TouchableOpacity
+          style={{
+            backgroundColor: '#007AFF',
+            padding: 10,
+            borderRadius: 5,
+            justifyContent: 'center'
+          }}
+          onPress={addTodo}
+        &gt;
+          &lt;Text style={{ color: 'white', fontWeight: 'bold' }}&gt;添加&lt;/Text&gt;
+        &lt;/TouchableOpacity&gt;
+      &lt;/View&gt;
+
+      &lt;FlatList
+        data={todos}
+        keyExtractor={(item) =&gt; item.id.toString()}
+        renderItem={({ item }) =&gt; (
+          &lt;View style={{
+            padding: 15,
+            backgroundColor: '#f9f9f9',
+            marginBottom: 5,
+            borderRadius: 5
+          }}&gt;
+            &lt;Text style={{
+              fontSize: 16,
+              textDecorationLine: item.completed ? 'line-through' : 'none'
+            }}&gt;
+              {item.text}
+            &lt;/Text&gt;
+          &lt;/View&gt;
+        )}
+      /&gt;
+    &lt;/View&gt;
+  );
+};
+
+export default TodoApp;</code></pre>
+            
+            <h2>性能优化</h2>
+            
+            <h3>渲染优化</h3>
+            <ol>
+                <li><strong>使用 FlatList</strong> 代替 ScrollView 处理大量数据</li>
+                <li><strong>实现 shouldComponentUpdate</strong> 或使用 React.memo</li>
+                <li><strong>避免在 render 中创建新对象</strong></li>
+            </ol>
+            
+            <h3>内存管理</h3>
+            <ul>
+                <li>及时清理定时器和监听器</li>
+                <li>使用图片压缩和缓存</li>
+                <li>合理使用状态管理工具</li>
+            </ul>
+            
+            <h2>总结</h2>
+            <p>
+                React Native 提供了强大的跨平台开发能力，通过本文的介绍，你应该对 RN 开发有了基本的了解。记住，实践是学习的最佳方式！
+            </p>
+            
+            <p>
+                <strong>下一篇文章预告</strong>: 我们将深入探讨 React Native 的导航系统和状态管理。
+            </p>
+            
+            <hr style="margin: 40px 0; border: none; border-top: 1px solid #e2e8f0;">
+            
+            <p style="text-align: center; font-style: italic; color: #64748B;">
+                <em>如果这篇文章对你有帮助，请点赞并关注更多技术分享！</em>
+            </p>
+        </div>
+        
+        <div class="article-footer">
+            <div class="article-stats">
+                <div class="stat-item">
+                    <span>👁️</span>
+                    <span>2,341 阅读</span>
+                </div>
+                <div class="stat-item">
+                    <span>❤️</span>
+                    <span>128 点赞</span>
+                </div>
+                <div class="stat-item">
+                    <span>💬</span>
+                    <span>23 评论</span>
+                </div>
+                <div class="stat-item">
+                    <span>🔖</span>
+                    <span>89 收藏</span>
+                </div>
+            </div>
+            
+            <div class="author-card">
+                <div class="author-card-header">
+                    <div class="author-card-avatar">李</div>
+                    <div class="author-card-info">
+                        <h3>李明</h3>
+                        <p>资深全栈工程师，专注React生态</p>
+                        <div class="author-stats">
+                            <span>1.2k 关注者</span>
+                            <span>•</span>
+                            <span>45 篇文章</span>
+                            <span>•</span>
+                            <span>156k 总阅读</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="author-bio">
+                    5年前端开发经验，擅长 React、React Native 和 Node.js 开发。热衷于分享技术知识和实战经验，帮助更多开发者成长。
+                </p>
+                <button class="btn btn-primary" onclick="followAuthor()">关注作者</button>
+            </div>
+            
+            <div class="subscribe-cta">
+                <h3>订阅获得更多优质内容</h3>
+                <p>每周发布最新技术文章，包含实战项目和最佳实践</p>
+                <button class="subscribe-btn" onclick="showSubscribe()">立即订阅 ¥29/月</button>
+            </div>
+            
+            <div class="related-articles">
+                <h3 class="related-title">相关文章</h3>
+                <div class="related-grid">
+                    <div class="related-item" onclick="location.href='#'">
+                        <h4>React Native 导航完全指南</h4>
+                        <p>深入了解 React Navigation 6 的使用方法和最佳实践...</p>
+                        <div class="related-meta">12分钟阅读 • 1,856 阅读</div>
+                    </div>
+                    <div class="related-item" onclick="location.href='#'">
+                        <h4>移动端性能优化实战</h4>
+                        <p>分享 React Native 应用性能优化的实际经验和技巧...</p>
+                        <div class="related-meta">18分钟阅读 • 2,341 阅读</div>
+                    </div>
+                    <div class="related-item" onclick="location.href='#'">
+                        <h4>React Native 状态管理选型</h4>
+                        <p>对比 Redux、MobX 和 Zustand 在 RN 中的使用场景...</p>
+                        <div class="related-meta">22分钟阅读 • 1,923 阅读</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </article>
+    
+    <script>
+        let isLiked = true;
+        let isBookmarked = false;
+        
+        function toggleLike() {
+            const likeBtn = document.querySelector('.action-btn.liked') || document.querySelector('.action-btn');
+            const likeCount = document.getElementById('like-count');
+            let count = parseInt(likeCount.textContent);
+            
+            if (isLiked) {
+                likeBtn.classList.remove('liked');
+                likeBtn.innerHTML = '🤍 ' + (count - 1);
+                count--;
+            } else {
+                likeBtn.classList.add('liked');
+                likeBtn.innerHTML = '❤️ <span id="like-count">' + (count + 1) + '</span>';
+                count++;
+            }
+            
+            isLiked = !isLiked;
+            likeCount.textContent = count;
+        }
+        
+        function toggleBookmark() {
+            const bookmarkBtn = document.querySelectorAll('.action-btn')[1];
+            
+            if (isBookmarked) {
+                bookmarkBtn.innerHTML = '🔖 收藏';
+                alert('已取消收藏');
+            } else {
+                bookmarkBtn.innerHTML = '✅ 已收藏';
+                alert('已收藏到书签');
+            }
+            
+            isBookmarked = !isBookmarked;
+        }
+        
+        function shareArticle() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'React Native 开发实战指南',
+                    text: 'React Native 已经成为跨平台移动应用开发的首选框架之一。',
+                    url: window.location.href
+                });
+            } else {
+                // 复制链接
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('文章链接已复制到剪贴板');
+                });
+            }
+        }
+        
+        function showComments() {
+            alert('评论系统开发中...');
+        }
+        
+        function followAuthor() {
+            const btn = event.target;
+            if (btn.textContent === '关注作者') {
+                btn.textContent = '已关注';
+                btn.style.background = '#f1f5f9';
+                btn.style.color = '#64748B';
+                alert('已关注作者李明');
+            } else {
+                btn.textContent = '关注作者';
+                btn.style.background = '#1E3A8A';
+                btn.style.color = 'white';
+                alert('已取消关注');
+            }
+        }
+        
+        function showSubscribe() {
+            if (confirm('订阅李明的内容，每月仅需 ¥29？')) {
+                alert('订阅成功！您将获得所有优质内容访问权限');
+            }
+        }
+        
+        // 页面加载后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟阅读进度
+            let readProgress = 0;
+            
+            window.addEventListener('scroll', function() {
+                const article = document.querySelector('.article-content');
+                const articleTop = article.offsetTop;
+                const articleHeight = article.offsetHeight;
+                const windowHeight = window.innerHeight;
+                const scrollTop = window.pageYOffset;
+                
+                const articleBottom = articleTop + articleHeight;
+                const windowBottom = scrollTop + windowHeight;
+                
+                if (windowBottom > articleTop && scrollTop < articleBottom) {
+                    const visibleHeight = Math.min(windowBottom, articleBottom) - Math.max(scrollTop, articleTop);
+                    readProgress = Math.max(readProgress, (visibleHeight / articleHeight) * 100);
+                    
+                    // 当阅读进度超过50%时，可以触发一些事件
+                    if (readProgress > 50) {
+                        console.log('用户已阅读超过50%');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

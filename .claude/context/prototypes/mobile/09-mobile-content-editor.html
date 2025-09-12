@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 内容编辑</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #fff;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .editor-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+        
+        .back-btn:active {
+            background: #f1f5f9;
+            transform: scale(0.95);
+        }
+        
+        .editor-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .preview-btn, .save-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .preview-btn {
+            background: #f8fafc;
+            color: #64748B;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .save-btn {
+            background: #1E3A8A;
+            color: white;
+            border: none;
+        }
+        
+        .preview-btn:active, .save-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .editor-container {
+            padding: 0 24px 120px;
+        }
+        
+        .article-meta {
+            padding: 24px 0;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 24px;
+        }
+        
+        .meta-field {
+            margin-bottom: 20px;
+        }
+        
+        .field-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .title-input {
+            width: 100%;
+            border: none;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E293B;
+            background: transparent;
+            outline: none;
+            padding: 0;
+            line-height: 1.4;
+            resize: none;
+        }
+        
+        .title-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .subtitle-input {
+            width: 100%;
+            border: none;
+            font-size: 16px;
+            color: #64748B;
+            background: transparent;
+            outline: none;
+            padding: 0;
+            margin-top: 8px;
+            resize: none;
+        }
+        
+        .subtitle-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .tags-input {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        .tags-input:focus {
+            border-color: #1E3A8A;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .tags-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .tag-item {
+            background: #e2e8f0;
+            color: #64748B;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .pricing-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        
+        .pricing-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .toggle-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            background: #e2e8f0;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .toggle-switch.active {
+            background: #1E3A8A;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+        
+        .price-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+        
+        .price-input-group.active {
+            opacity: 1;
+        }
+        
+        .price-input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .price-unit {
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .toolbar {
+            position: fixed;
+            bottom: 88px;
+            left: 0;
+            right: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            display: flex;
+            gap: 16px;
+            justify-content: space-around;
+            z-index: 100;
+        }
+        
+        .toolbar-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 8px;
+            border-radius: 8px;
+            min-width: 48px;
+        }
+        
+        .toolbar-btn:active {
+            background: #f8fafc;
+            transform: scale(0.95);
+        }
+        
+        .toolbar-btn.active {
+            color: #1E3A8A;
+        }
+        
+        .toolbar-icon {
+            font-size: 20px;
+        }
+        
+        .toolbar-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .editor-area {
+            margin-top: 24px;
+        }
+        
+        .content-editor {
+            width: 100%;
+            min-height: 400px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #374151;
+            background: white;
+            outline: none;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .content-editor:focus {
+            border-color: #1E3A8A;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .content-editor::placeholder {
+            color: #94a3b8;
+        }
+        
+        .preview-mode {
+            display: none;
+            padding: 20px 0;
+        }
+        
+        .preview-content {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #374151;
+        }
+        
+        .preview-content h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1E293B;
+            margin: 24px 0 12px;
+        }
+        
+        .preview-content p {
+            margin-bottom: 16px;
+        }
+        
+        .preview-content ul, .preview-content ol {
+            margin: 16px 0 16px 20px;
+        }
+        
+        .preview-content li {
+            margin-bottom: 8px;
+        }
+        
+        .bottom-nav {
+            height: 88px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 8px 40px 32px 40px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #1E3A8A;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="editor-header">
+                    <div class="header-left">
+                        <div class="back-btn" onclick="goBack()">←</div>
+                        <div class="editor-title">新建文章</div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="preview-btn" onclick="togglePreview()">预览</button>
+                        <button class="save-btn" onclick="saveArticle()">发布</button>
+                    </div>
+                </div>
+                
+                <div class="editor-container">
+                    <div class="article-meta">
+                        <div class="meta-field">
+                            <textarea 
+                                class="title-input" 
+                                placeholder="文章标题..." 
+                                id="articleTitle"
+                                rows="2"
+                                oninput="adjustTextareaHeight(this)"
+                            ></textarea>
+                            <textarea 
+                                class="subtitle-input" 
+                                placeholder="添加副标题（可选）..." 
+                                id="articleSubtitle"
+                                rows="1"
+                                oninput="adjustTextareaHeight(this)"
+                            ></textarea>
+                        </div>
+                        
+                        <div class="meta-field">
+                            <label class="field-label" for="tags">标签</label>
+                            <input 
+                                type="text" 
+                                class="tags-input" 
+                                id="tags"
+                                placeholder="输入标签，用逗号分隔..."
+                                oninput="updateTagsPreview()"
+                            >
+                            <div class="tags-preview" id="tagsPreview"></div>
+                        </div>
+                        
+                        <div class="meta-field">
+                            <div class="pricing-section">
+                                <div class="pricing-toggle">
+                                    <span class="toggle-label">设为付费文章</span>
+                                    <div class="toggle-switch" onclick="togglePaidMode()" id="paidToggle"></div>
+                                </div>
+                                <div class="price-input-group" id="priceInputGroup">
+                                    <input type="number" class="price-input" placeholder="价格" min="0" step="0.01">
+                                    <span class="price-unit">元</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-area">
+                        <div class="edit-mode" id="editMode">
+                            <textarea 
+                                class="content-editor" 
+                                id="contentEditor"
+                                placeholder="开始写作...
+
+支持 Markdown 语法：
+# 标题
+## 二级标题
+**粗体** *斜体*
+- 列表项
+> 引用文字
+
+让想法自由流淌吧！"
+                            ></textarea>
+                        </div>
+                        
+                        <div class="preview-mode" id="previewMode">
+                            <div class="preview-content" id="previewContent">
+                                <p>在这里查看文章预览效果</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="toolbar">
+                <div class="toolbar-btn" onclick="insertText('#')">
+                    <div class="toolbar-icon">H</div>
+                    <div class="toolbar-label">标题</div>
+                </div>
+                
+                <div class="toolbar-btn" onclick="insertText('**', '**')">
+                    <div class="toolbar-icon">B</div>
+                    <div class="toolbar-label">粗体</div>
+                </div>
+                
+                <div class="toolbar-btn" onclick="insertText('*', '*')">
+                    <div class="toolbar-icon">I</div>
+                    <div class="toolbar-label">斜体</div>
+                </div>
+                
+                <div class="toolbar-btn" onclick="insertText('- ')">
+                    <div class="toolbar-icon">•</div>
+                    <div class="toolbar-label">列表</div>
+                </div>
+                
+                <div class="toolbar-btn" onclick="insertText('> ')">
+                    <div class="toolbar-icon">❝</div>
+                    <div class="toolbar-label">引用</div>
+                </div>
+                
+                <div class="toolbar-btn" onclick="insertImage()">
+                    <div class="toolbar-icon">📷</div>
+                    <div class="toolbar-label">图片</div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item" onclick="navigate('home')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">首页</div>
+                </div>
+                <div class="nav-item" onclick="navigate('discovery')">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">发现</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">我的</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isPreviewMode = false;
+        let isPaidMode = false;
+        
+        function goBack() {
+            console.log('返回上一页');
+            if (confirm('确定要离开编辑器吗？未保存的内容将丢失。')) {
+                alert('返回内容管理页面');
+            }
+        }
+        
+        function togglePreview() {
+            const editMode = document.getElementById('editMode');
+            const previewMode = document.getElementById('previewMode');
+            const previewBtn = document.querySelector('.preview-btn');
+            const contentEditor = document.getElementById('contentEditor');
+            const previewContent = document.getElementById('previewContent');
+            
+            isPreviewMode = !isPreviewMode;
+            
+            if (isPreviewMode) {
+                editMode.style.display = 'none';
+                previewMode.style.display = 'block';
+                previewBtn.textContent = '编辑';
+                previewBtn.style.background = '#1E3A8A';
+                previewBtn.style.color = 'white';
+                
+                // 简单的 Markdown 预览转换
+                const content = contentEditor.value;
+                const htmlContent = content
+                    .replace(/^# (.*$)/gm, '<h2>$1</h2>')
+                    .replace(/^## (.*$)/gm, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/^- (.*$)/gm, '<li>$1</li>')
+                    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                    .replace(/\n/g, '<br>');
+                
+                previewContent.innerHTML = htmlContent || '<p>暂无内容</p>';
+            } else {
+                editMode.style.display = 'block';
+                previewMode.style.display = 'none';
+                previewBtn.textContent = '预览';
+                previewBtn.style.background = '#f8fafc';
+                previewBtn.style.color = '#64748B';
+            }
+        }
+        
+        function saveArticle() {
+            const title = document.getElementById('articleTitle').value;
+            const content = document.getElementById('contentEditor').value;
+            
+            if (!title.trim()) {
+                alert('请输入文章标题');
+                return;
+            }
+            
+            if (!content.trim()) {
+                alert('请输入文章内容');
+                return;
+            }
+            
+            if (confirm('确定发布这篇文章吗？')) {
+                console.log('发布文章', { title, content, isPaid: isPaidMode });
+                alert('文章发布成功！');
+            }
+        }
+        
+        function togglePaidMode() {
+            const toggle = document.getElementById('paidToggle');
+            const priceGroup = document.getElementById('priceInputGroup');
+            
+            isPaidMode = !isPaidMode;
+            
+            if (isPaidMode) {
+                toggle.classList.add('active');
+                priceGroup.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+                priceGroup.classList.remove('active');
+            }
+        }
+        
+        function updateTagsPreview() {
+            const tagsInput = document.getElementById('tags');
+            const tagsPreview = document.getElementById('tagsPreview');
+            const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+            
+            tagsPreview.innerHTML = tags.map(tag => 
+                `<span class="tag-item">${tag}</span>`
+            ).join('');
+        }
+        
+        function adjustTextareaHeight(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+        
+        function insertText(before, after = '') {
+            const editor = document.getElementById('contentEditor');
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const selectedText = editor.value.substring(start, end);
+            const newText = before + selectedText + after;
+            
+            editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
+            editor.focus();
+            editor.setSelectionRange(start + before.length, start + before.length + selectedText.length);
+        }
+        
+        function insertImage() {
+            if (confirm('选择图片来源：\n\n确定 = 相册\n取消 = 拍照')) {
+                insertText('![图片描述](', ')');
+                alert('图片上传功能开发中...');
+            } else {
+                insertText('![图片描述](', ')');
+                alert('拍照功能开发中...');
+            }
+        }
+        
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('导航到:', page);
+            alert(`导航到${page}页面`);
+        }
+        
+        // 自动保存草稿
+        let autoSaveTimer;
+        document.getElementById('contentEditor').addEventListener('input', function() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                console.log('自动保存草稿');
+            }, 2000);
+        });
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            if (!e.target.matches('input, textarea')) {
+                e.preventDefault();
+            }
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.back-btn, .preview-btn, .save-btn, .toolbar-btn, .toggle-switch');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+        
+        // 防止键盘遮挡内容
+        let initialViewportHeight = window.innerHeight;
+        
+        window.addEventListener('resize', function() {
+            const currentHeight = window.innerHeight;
+            const heightDiff = initialViewportHeight - currentHeight;
+            
+            if (heightDiff > 150) {
+                // 键盘可能已显示
+                document.querySelector('.toolbar').style.bottom = '20px';
+            } else {
+                // 键盘隐藏
+                document.querySelector('.toolbar').style.bottom = '88px';
+            }
+        });
+    </script>
+</body>
+</html>

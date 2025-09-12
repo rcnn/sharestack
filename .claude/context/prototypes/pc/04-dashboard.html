@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack - 创作者后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E3A8A;
+            margin-bottom: 8px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-details h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .user-details p {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .nav-menu {
+            padding-top: 24px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: #f1f5f9;
+            color: #1E3A8A;
+            border-right-color: #1E3A8A;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #64748B;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .stat-title {
+            font-size: 14px;
+            color: #64748B;
+            font-weight: 500;
+        }
+        
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .stat-icon.revenue {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        
+        .stat-icon.subscribers {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        
+        .stat-icon.views {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .stat-icon.articles {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .stat-change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .stat-change.positive {
+            color: #059669;
+        }
+        
+        .stat-change.negative {
+            color: #dc2626;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .chart-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .chart-filters {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn.active {
+            background: #1E3A8A;
+            color: white;
+            border-color: #1E3A8A;
+        }
+        
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            font-size: 16px;
+        }
+        
+        .recent-activity {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .activity-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .activity-icon.new-subscriber {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        
+        .activity-icon.new-comment {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        
+        .activity-icon.payment {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .activity-time {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .content-list {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        
+        .list-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .list-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .content-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .content-item:last-child {
+            border-bottom: none;
+        }
+        
+        .content-thumbnail {
+            width: 60px;
+            height: 40px;
+            border-radius: 6px;
+            background: linear-gradient(45deg, #e2e8f0, #f1f5f9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #94a3b8;
+        }
+        
+        .content-info {
+            flex: 1;
+        }
+        
+        .content-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .content-meta {
+            font-size: 12px;
+            color: #64748B;
+            display: flex;
+            gap: 16px;
+        }
+        
+        .content-status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-published {
+            background: #ecfdf5;
+            color: #059669;
+        }
+        
+        .status-draft {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .content-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 4px 8px;
+            border: none;
+            background: transparent;
+            color: #64748B;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #f1f5f9;
+            color: #1E3A8A;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">ShareStack</div>
+                <div class="user-info">
+                    <div class="user-avatar">李</div>
+                    <div class="user-details">
+                        <h3>李明</h3>
+                        <p>创作者</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">📊</span>
+                    <span>概览</span>
+                </a>
+                <a href="05-content-editor.html" class="nav-item">
+                    <span class="nav-icon">✍️</span>
+                    <span>写文章</span>
+                </a>
+                <a href="06-content-management.html" class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    <span>内容管理</span>
+                </a>
+                <a href="07-subscription-settings.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>订阅设置</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>订阅者</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>数据分析</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">💳</span>
+                    <span>收入报表</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">概览</h1>
+                <div class="header-actions">
+                    <a href="05-content-editor.html" class="btn btn-primary">
+                        ✍️ 写新文章
+                    </a>
+                    <button class="btn btn-outline">📤 导出数据</button>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">本月收入</span>
+                        <div class="stat-icon revenue">💰</div>
+                    </div>
+                    <div class="stat-value">¥12,486</div>
+                    <div class="stat-change positive">
+                        ↗️ +15.3% 较上月
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">订阅者</span>
+                        <div class="stat-icon subscribers">👥</div>
+                    </div>
+                    <div class="stat-value">1,234</div>
+                    <div class="stat-change positive">
+                        ↗️ +8.7% 较上月
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">本月浏览</span>
+                        <div class="stat-icon views">👁️</div>
+                    </div>
+                    <div class="stat-value">45.2k</div>
+                    <div class="stat-change positive">
+                        ↗️ +12.1% 较上月
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">发布文章</span>
+                        <div class="stat-icon articles">📝</div>
+                    </div>
+                    <div class="stat-value">28</div>
+                    <div class="stat-change positive">
+                        ↗️ +3 较上月
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3 class="chart-title">收入趋势</h3>
+                        <div class="chart-filters">
+                            <button class="filter-btn">7天</button>
+                            <button class="filter-btn active">30天</button>
+                            <button class="filter-btn">90天</button>
+                            <button class="filter-btn">1年</button>
+                        </div>
+                    </div>
+                    <div class="chart-placeholder">
+                        📈 收入趋势图表
+                    </div>
+                </div>
+                
+                <div class="recent-activity">
+                    <div class="activity-header">
+                        <h3 class="chart-title">最新动态</h3>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon new-subscriber">👤</div>
+                        <div class="activity-content">
+                            <div class="activity-title">新增订阅者 "王小明"</div>
+                            <div class="activity-time">2分钟前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon new-comment">💬</div>
+                        <div class="activity-content">
+                            <div class="activity-title">文章收到新评论</div>
+                            <div class="activity-time">15分钟前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon payment">💳</div>
+                        <div class="activity-content">
+                            <div class="activity-title">收到订阅付款 ¥99</div>
+                            <div class="activity-time">1小时前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon new-subscriber">👤</div>
+                        <div class="activity-content">
+                            <div class="activity-title">新增订阅者 "张三"</div>
+                            <div class="activity-time">3小时前</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon new-comment">💬</div>
+                        <div class="activity-content">
+                            <div class="activity-title">文章获得点赞</div>
+                            <div class="activity-time">5小时前</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-list">
+                <div class="list-header">
+                    <h3 class="list-title">最新内容</h3>
+                    <a href="06-content-management.html" class="btn btn-outline">查看全部</a>
+                </div>
+                
+                <div class="content-item">
+                    <div class="content-thumbnail">📱</div>
+                    <div class="content-info">
+                        <div class="content-title">React Native 开发实战指南</div>
+                        <div class="content-meta">
+                            <span>2小时前</span>
+                            <span>1,234 阅读</span>
+                            <span>56 点赞</span>
+                        </div>
+                    </div>
+                    <div class="content-status status-published">已发布</div>
+                    <div class="content-actions">
+                        <button class="action-btn">编辑</button>
+                        <button class="action-btn">查看</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+                
+                <div class="content-item">
+                    <div class="content-thumbnail">💼</div>
+                    <div class="content-info">
+                        <div class="content-title">创业公司如何制定产品策略</div>
+                        <div class="content-meta">
+                            <span>5小时前</span>
+                            <span>892 阅读</span>
+                            <span>42 点赞</span>
+                        </div>
+                    </div>
+                    <div class="content-status status-published">已发布</div>
+                    <div class="content-actions">
+                        <button class="action-btn">编辑</button>
+                        <button class="action-btn">查看</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+                
+                <div class="content-item">
+                    <div class="content-thumbnail">🎨</div>
+                    <div class="content-info">
+                        <div class="content-title">UI设计系统搭建指南（草稿）</div>
+                        <div class="content-meta">
+                            <span>1天前</span>
+                            <span>草稿</span>
+                            <span>未发布</span>
+                        </div>
+                    </div>
+                    <div class="content-status status-draft">草稿</div>
+                    <div class="content-actions">
+                        <button class="action-btn">编辑</button>
+                        <button class="action-btn">发布</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // 模拟实时数据更新
+        function updateStats() {
+            // 这里可以通过API获取最新数据
+            console.log('更新统计数据...');
+        }
+        
+        // 每30秒更新一次数据
+        setInterval(updateStats, 30000);
+        
+        // 图表筛选器点击事件
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除其他按钮的active状态
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                // 添加active状态到当前按钮
+                this.classList.add('active');
+                
+                // 这里可以根据选中的时间范围重新加载图表数据
+                console.log('切换时间范围:', this.textContent);
+            });
+        });
+        
+        // 内容操作按钮事件
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const action = this.textContent.trim();
+                
+                switch(action) {
+                    case '编辑':
+                        window.location.href = '05-content-editor.html';
+                        break;
+                    case '查看':
+                        window.location.href = '08-content-detail.html';
+                        break;
+                    case '发布':
+                        if(confirm('确定要发布这篇文章吗？')) {
+                            alert('文章已发布！');
+                            // 更新状态
+                            const statusElement = this.closest('.content-item').querySelector('.content-status');
+                            statusElement.textContent = '已发布';
+                            statusElement.className = 'content-status status-published';
+                        }
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

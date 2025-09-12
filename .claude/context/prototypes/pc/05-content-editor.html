@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack - 内容编辑器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .editor-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E3A8A;
+            margin-bottom: 8px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-details h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .user-details p {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .nav-menu {
+            padding-top: 24px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: #f1f5f9;
+            color: #1E3A8A;
+            border-right-color: #1E3A8A;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .editor-main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .editor-header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .back-btn:hover {
+            color: #1E3A8A;
+        }
+        
+        .draft-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #64748B;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-primary {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .editor-content {
+            flex: 1;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            overflow: hidden;
+        }
+        
+        .title-input {
+            padding: 24px;
+            border: none;
+            font-size: 32px;
+            font-weight: 600;
+            color: #1E293B;
+            background: white;
+            resize: none;
+            outline: none;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .title-input::placeholder {
+            color: #cbd5e1;
+        }
+        
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100%;
+        }
+        
+        .editor-pane {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        .pane-header {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .pane-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        .editor-toolbar {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .toolbar-btn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #64748B;
+            transition: all 0.2s;
+        }
+        
+        .toolbar-btn:hover {
+            background: #f1f5f9;
+            color: #1E3A8A;
+        }
+        
+        .toolbar-btn.active {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .markdown-editor {
+            flex: 1;
+            padding: 24px;
+            font-family: 'Fira Code', Monaco, monospace;
+            font-size: 14px;
+            border: none;
+            resize: none;
+            outline: none;
+            line-height: 1.6;
+            background: white;
+            color: #374151;
+        }
+        
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .preview-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        .preview-content h1,
+        .preview-content h2,
+        .preview-content h3 {
+            color: #1E293B;
+            margin: 24px 0 16px 0;
+            font-weight: 600;
+        }
+        
+        .preview-content h1 {
+            font-size: 28px;
+        }
+        
+        .preview-content h2 {
+            font-size: 24px;
+        }
+        
+        .preview-content h3 {
+            font-size: 20px;
+        }
+        
+        .preview-content p {
+            margin-bottom: 16px;
+            color: #374151;
+            line-height: 1.7;
+        }
+        
+        .preview-content code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', Monaco, monospace;
+            font-size: 13px;
+            color: #e11d48;
+        }
+        
+        .preview-content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .preview-content blockquote {
+            border-left: 4px solid #1E3A8A;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: #64748B;
+            font-style: italic;
+        }
+        
+        .settings-panel {
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        .panel-section {
+            margin-bottom: 32px;
+        }
+        
+        .panel-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #1E3A8A;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            min-height: 42px;
+        }
+        
+        .tag {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        
+        .tag-remove:hover {
+            color: #ef4444;
+        }
+        
+        .visibility-options {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .visibility-option {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .visibility-option:hover {
+            border-color: #1E3A8A;
+        }
+        
+        .visibility-option.selected {
+            border-color: #1E3A8A;
+            background: #eff6ff;
+        }
+        
+        .option-title {
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .option-desc {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: #1E3A8A;
+            background: #fafbff;
+        }
+        
+        .upload-icon {
+            font-size: 32px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+        }
+        
+        .upload-text {
+            color: #64748B;
+            margin-bottom: 8px;
+        }
+        
+        .upload-hint {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        .word-count {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 12px 24px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #64748B;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        @media (max-width: 1200px) {
+            .editor-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar, .settings-panel {
+                display: none;
+            }
+            
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-pane {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">ShareStack</div>
+                <div class="user-info">
+                    <div class="user-avatar">李</div>
+                    <div class="user-details">
+                        <h3>李明</h3>
+                        <p>创作者</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="04-dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>概览</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">✍️</span>
+                    <span>写文章</span>
+                </a>
+                <a href="06-content-management.html" class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    <span>内容管理</span>
+                </a>
+                <a href="07-subscription-settings.html" class="nav-item">
+                    <span class="nav-icon">💰</span>
+                    <span>订阅设置</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>订阅者</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>数据分析</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">💳</span>
+                    <span>收入报表</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <main class="editor-main">
+            <div class="editor-header">
+                <div class="header-left">
+                    <a href="04-dashboard.html" class="back-btn">
+                        ← 返回概览
+                    </a>
+                    <div class="draft-status">
+                        <div class="status-dot"></div>
+                        <span>自动保存于 2 分钟前</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline">💾 保存草稿</button>
+                    <button class="btn btn-secondary">👁️ 预览</button>
+                    <button class="btn btn-primary" onclick="publishArticle()">🚀 发布</button>
+                </div>
+            </div>
+            
+            <div class="editor-content">
+                <textarea class="title-input" placeholder="请输入文章标题..." id="article-title">React Native 开发实战指南</textarea>
+                
+                <div class="editor-container">
+                    <div class="editor-pane">
+                        <div class="pane-header">
+                            <span class="pane-title">编辑器</span>
+                            <div class="editor-toolbar">
+                                <button class="toolbar-btn" title="粗体" onclick="insertMarkdown('**', '**')">B</button>
+                                <button class="toolbar-btn" title="斜体" onclick="insertMarkdown('*', '*')">I</button>
+                                <button class="toolbar-btn" title="标题" onclick="insertMarkdown('## ', '')">H</button>
+                                <button class="toolbar-btn" title="链接" onclick="insertMarkdown('[', '](url)')">🔗</button>
+                                <button class="toolbar-btn" title="图片" onclick="insertMarkdown('![', '](image-url)')">🖼️</button>
+                                <button class="toolbar-btn" title="代码" onclick="insertMarkdown('`', '`')">💻</button>
+                                <button class="toolbar-btn" title="列表" onclick="insertMarkdown('- ', '')">📝</button>
+                            </div>
+                        </div>
+                        <textarea class="markdown-editor" id="markdown-content" placeholder="开始写作..." oninput="updatePreview()">## 前言
+
+React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始，带你了解 React Native 开发的各个方面。
+
+## 环境搭建
+
+首先，我们需要搭建开发环境：
+
+```bash
+npm install -g @react-native-community/cli
+npx react-native init MyProject
+```
+
+### 开发工具推荐
+
+- **VS Code** - 强大的代码编辑器
+- **Flipper** - 调试工具
+- **Reactotron** - 状态管理调试
+
+## 核心概念
+
+### 组件生命周期
+
+React Native 组件具有以下主要生命周期方法：
+
+- `componentDidMount()` - 组件挂载后调用
+- `componentWillUnmount()` - 组件卸载前调用
+- `useEffect()` - Hook 版本的生命周期管理
+
+> **提示**: 使用 Hooks 可以让代码更简洁和易于维护。
+
+## 实战项目
+
+让我们创建一个简单的待办事项应用：
+
+```javascript
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList } from 'react-native';
+
+const TodoApp = () => {
+  const [todos, setTodos] = useState([]);
+  const [inputText, setInputText] = useState('');
+
+  const addTodo = () => {
+    if (inputText.trim()) {
+      setTodos([...todos, { id: Date.now(), text: inputText, completed: false }]);
+      setInputText('');
+    }
+  };
+
+  return (
+    <View style={{ flex: 1, padding: 20 }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+        待办事项
+      </Text>
+      
+      <View style={{ flexDirection: 'row', marginBottom: 20 }}>
+        <TextInput
+          style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: '#ccc',
+            padding: 10,
+            marginRight: 10,
+            borderRadius: 5
+          }}
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder="添加新任务..."
+        />
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#007AFF',
+            padding: 10,
+            borderRadius: 5,
+            justifyContent: 'center'
+          }}
+          onPress={addTodo}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>添加</Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={todos}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={{
+            padding: 15,
+            backgroundColor: '#f9f9f9',
+            marginBottom: 5,
+            borderRadius: 5
+          }}>
+            <Text style={{
+              fontSize: 16,
+              textDecorationLine: item.completed ? 'line-through' : 'none'
+            }}>
+              {item.text}
+            </Text>
+          </View>
+        )}
+      />
+    </View>
+  );
+};
+
+export default TodoApp;
+```
+
+## 性能优化
+
+### 渲染优化
+
+1. **使用 FlatList** 代替 ScrollView 处理大量数据
+2. **实现 shouldComponentUpdate** 或使用 React.memo
+3. **避免在 render 中创建新对象**
+
+### 内存管理
+
+- 及时清理定时器和监听器
+- 使用图片压缩和缓存
+- 合理使用状态管理工具
+
+## 总结
+
+React Native 提供了强大的跨平台开发能力，通过本文的介绍，你应该对 RN 开发有了基本的了解。记住，实践是学习的最佳方式！
+
+**下一篇文章预告**: 我们将深入探讨 React Native 的导航系统和状态管理。
+
+---
+
+*如果这篇文章对你有帮助，请点赞并关注更多技术分享！*</textarea>
+                    </div>
+                    
+                    <div class="preview-pane">
+                        <div class="pane-header">
+                            <span class="pane-title">预览</span>
+                            <div class="editor-toolbar">
+                                <button class="toolbar-btn" title="刷新预览" onclick="updatePreview()">🔄</button>
+                                <button class="toolbar-btn" title="全屏预览" onclick="toggleFullPreview()">⛶</button>
+                            </div>
+                        </div>
+                        <div class="preview-content" id="preview-content">
+                            <!-- 预览内容将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="word-count">
+                <span>字数: <span id="word-count">0</span></span>
+                <span>预计阅读时间: <span id="reading-time">0</span> 分钟</span>
+            </div>
+        </main>
+        
+        <aside class="settings-panel">
+            <div class="panel-section">
+                <h3>文章设置</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" for="excerpt">摘要</label>
+                    <textarea class="form-textarea" id="excerpt" placeholder="请输入文章摘要...">React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始，带你了解 React Native 开发的各个方面。</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">标签</label>
+                    <div class="tag-input" id="tag-input">
+                        <div class="tag">React Native <span class="tag-remove" onclick="removeTag(this)">×</span></div>
+                        <div class="tag">移动开发 <span class="tag-remove" onclick="removeTag(this)">×</span></div>
+                        <div class="tag">教程 <span class="tag-remove" onclick="removeTag(this)">×</span></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="category">分类</label>
+                    <select class="form-select" id="category">
+                        <option value="">选择分类</option>
+                        <option value="tech" selected>技术</option>
+                        <option value="business">商业</option>
+                        <option value="design">设计</option>
+                        <option value="life">生活方式</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h3>可见性</h3>
+                
+                <div class="visibility-options">
+                    <div class="visibility-option selected" onclick="selectVisibility(this, 'public')">
+                        <div class="option-title">🌍 公开</div>
+                        <div class="option-desc">所有人都可以查看</div>
+                    </div>
+                    <div class="visibility-option" onclick="selectVisibility(this, 'subscribers')">
+                        <div class="option-title">👥 订阅者</div>
+                        <div class="option-desc">仅订阅者可以查看</div>
+                    </div>
+                    <div class="visibility-option" onclick="selectVisibility(this, 'paid')">
+                        <div class="option-title">💰 付费内容</div>
+                        <div class="option-desc">需要付费订阅查看</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h3>封面图片</h3>
+                
+                <div class="upload-area" onclick="document.getElementById('cover-upload').click()">
+                    <div class="upload-icon">📸</div>
+                    <div class="upload-text">点击上传封面图片</div>
+                    <div class="upload-hint">推荐尺寸: 1200×630px</div>
+                    <input type="file" id="cover-upload" style="display: none" accept="image/*" onchange="handleCoverUpload(this)">
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h3>SEO设置</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" for="seo-title">SEO标题</label>
+                    <input type="text" class="form-input" id="seo-title" placeholder="搜索引擎显示的标题" value="React Native 开发实战指南 - ShareStack">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="seo-desc">SEO描述</label>
+                    <textarea class="form-textarea" id="seo-desc" placeholder="搜索引擎显示的描述">React Native 跨平台开发完整教程，从环境搭建到实战项目，包含组件生命周期、性能优化等核心知识点。</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="custom-url">自定义URL</label>
+                    <input type="text" class="form-input" id="custom-url" placeholder="react-native-guide" value="react-native-development-guide">
+                </div>
+            </div>
+            
+            <div class="panel-section">
+                <h3>发布选项</h3>
+                
+                <div class="form-group">
+                    <label class="form-label" for="publish-time">定时发布</label>
+                    <input type="datetime-local" class="form-input" id="publish-time">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="allow-comments" checked>
+                        允许评论
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="feature-article">
+                        设为精选文章
+                    </label>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <script>
+        let selectedVisibility = 'public';
+        
+        // 初始化预览
+        document.addEventListener('DOMContentLoaded', function() {
+            updatePreview();
+            updateWordCount();
+        });
+        
+        // 插入Markdown语法
+        function insertMarkdown(before, after) {
+            const textarea = document.getElementById('markdown-content');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            
+            const newText = before + selectedText + after;
+            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+            
+            // 设置新的光标位置
+            const newCursorPos = start + before.length + selectedText.length;
+            textarea.setSelectionRange(newCursorPos, newCursorPos);
+            textarea.focus();
+            
+            updatePreview();
+            updateWordCount();
+        }
+        
+        // 更新预览内容
+        function updatePreview() {
+            const markdown = document.getElementById('markdown-content').value;
+            const preview = document.getElementById('preview-content');
+            
+            // 简单的Markdown转换 (实际项目中应该使用marked.js等库)
+            let html = markdown
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>')
+                .replace(/^> (.*$)/gm, '<blockquote><p>$1</p></blockquote>')
+                .replace(/^- (.*$)/gm, '<li>$1</li>')
+                .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^\s*$/gm, '')
+                .replace(/^(?!<[huli])/gm, '<p>')
+                .replace(/(?<!>)$/gm, '</p>');
+            
+            // 清理多余的p标签
+            html = html
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p>(<h[1-6])/g, '$1')
+                .replace(/(<\/h[1-6]>)<\/p>/g, '$1')
+                .replace(/<p>(<blockquote)/g, '$1')
+                .replace(/(<\/blockquote>)<\/p>/g, '$1')
+                .replace(/<p>(<li)/g, '<ul>$1')
+                .replace(/(<\/li>)<\/p>/g, '$1</ul>')
+                .replace(/<p>(<pre)/g, '$1')
+                .replace(/(<\/pre>)<\/p>/g, '$1');
+            
+            preview.innerHTML = html;
+        }
+        
+        // 更新字数统计
+        function updateWordCount() {
+            const content = document.getElementById('markdown-content').value;
+            const wordCount = content.length;
+            const readingTime = Math.ceil(wordCount / 500); // 假设每分钟阅读500字
+            
+            document.getElementById('word-count').textContent = wordCount;
+            document.getElementById('reading-time').textContent = readingTime;
+        }
+        
+        // 选择可见性
+        function selectVisibility(element, type) {
+            document.querySelectorAll('.visibility-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedVisibility = type;
+        }
+        
+        // 移除标签
+        function removeTag(element) {
+            element.parentElement.remove();
+        }
+        
+        // 处理封面上传
+        function handleCoverUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const uploadArea = input.parentElement;
+                    uploadArea.innerHTML = `
+                        <img src="${e.target.result}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px;">
+                        <div style="margin-top: 8px; font-size: 12px; color: #64748B;">
+                            <span onclick="document.getElementById('cover-upload').click()" style="cursor: pointer; color: #1E3A8A;">更换图片</span> |
+                            <span onclick="removeCover()" style="cursor: pointer; color: #ef4444;">删除</span>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // 删除封面
+        function removeCover() {
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.innerHTML = `
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">点击上传封面图片</div>
+                <div class="upload-hint">推荐尺寸: 1200×630px</div>
+                <input type="file" id="cover-upload" style="display: none" accept="image/*" onchange="handleCoverUpload(this)">
+            `;
+            uploadArea.setAttribute('onclick', "document.getElementById('cover-upload').click()");
+        }
+        
+        // 发布文章
+        function publishArticle() {
+            const title = document.getElementById('article-title').value;
+            const content = document.getElementById('markdown-content').value;
+            
+            if (!title.trim()) {
+                alert('请输入文章标题');
+                return;
+            }
+            
+            if (!content.trim()) {
+                alert('请输入文章内容');
+                return;
+            }
+            
+            if (confirm('确定要发布这篇文章吗？')) {
+                // 模拟发布过程
+                const btn = event.target;
+                btn.textContent = '发布中...';
+                btn.disabled = true;
+                
+                setTimeout(() => {
+                    alert('文章发布成功！');
+                    window.location.href = '08-content-detail.html';
+                }, 2000);
+            }
+        }
+        
+        // 全屏预览
+        function toggleFullPreview() {
+            const preview = document.querySelector('.preview-pane');
+            if (preview.style.position === 'fixed') {
+                preview.style.position = '';
+                preview.style.top = '';
+                preview.style.left = '';
+                preview.style.width = '';
+                preview.style.height = '';
+                preview.style.zIndex = '';
+                preview.style.background = '';
+            } else {
+                preview.style.position = 'fixed';
+                preview.style.top = '0';
+                preview.style.left = '0';
+                preview.style.width = '100vw';
+                preview.style.height = '100vh';
+                preview.style.zIndex = '1000';
+                preview.style.background = 'white';
+            }
+        }
+        
+        // 自动保存
+        let saveTimer;
+        function autoSave() {
+            clearTimeout(saveTimer);
+            saveTimer = setTimeout(() => {
+                // 模拟自动保存
+                console.log('自动保存草稿...');
+                const statusElement = document.querySelector('.draft-status span');
+                statusElement.textContent = '自动保存于刚刚';
+            }, 2000);
+        }
+        
+        // 监听内容变化
+        document.getElementById('markdown-content').addEventListener('input', function() {
+            updatePreview();
+            updateWordCount();
+            autoSave();
+        });
+        
+        document.getElementById('article-title').addEventListener('input', autoSave);
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        autoSave();
+                        alert('草稿已保存');
+                        break;
+                    case 'b':
+                        e.preventDefault();
+                        insertMarkdown('**', '**');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        insertMarkdown('*', '*');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

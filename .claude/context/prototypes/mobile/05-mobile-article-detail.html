@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 文章详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #fff;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .article-header {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            z-index: 100;
+        }
+        
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+        
+        .back-btn:active {
+            background: #f1f5f9;
+            transform: scale(0.95);
+        }
+        
+        .header-right {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        
+        .header-btn:active {
+            background: #f1f5f9;
+            transform: scale(0.95);
+        }
+        
+        .article-content {
+            padding: 0 24px 120px;
+        }
+        
+        .article-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1E293B;
+            line-height: 1.3;
+            margin: 24px 0 16px;
+        }
+        
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .author-details h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .author-details p {
+            font-size: 13px;
+            color: #64748B;
+        }
+        
+        .follow-btn {
+            background: #1E3A8A;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .follow-btn:active {
+            background: #1E40AF;
+            transform: scale(0.98);
+        }
+        
+        .follow-btn.following {
+            background: #f1f5f9;
+            color: #64748B;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .article-body {
+            font-size: 17px;
+            line-height: 1.7;
+            color: #374151;
+        }
+        
+        .article-body h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E293B;
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .article-body h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1E293B;
+            margin: 24px 0 12px;
+        }
+        
+        .article-body p {
+            margin-bottom: 16px;
+        }
+        
+        .article-body ul, .article-body ol {
+            margin: 16px 0 16px 20px;
+        }
+        
+        .article-body li {
+            margin-bottom: 8px;
+        }
+        
+        .article-body blockquote {
+            background: #f8fafc;
+            border-left: 4px solid #1E3A8A;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            color: #64748B;
+            font-style: italic;
+        }
+        
+        .article-body code {
+            background: #f1f5f9;
+            color: #e11d48;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Fira Code', monospace;
+            font-size: 15px;
+        }
+        
+        .article-body pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Fira Code', monospace;
+            line-height: 1.5;
+        }
+        
+        .article-body pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        
+        .article-actions {
+            position: fixed;
+            bottom: 88px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 8px 16px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 8px 12px;
+            border-radius: 12px;
+        }
+        
+        .action-btn:active {
+            background: #f8fafc;
+            transform: scale(0.95);
+        }
+        
+        .action-btn.liked {
+            color: #ef4444;
+        }
+        
+        .action-btn.bookmarked {
+            color: #f59e0b;
+        }
+        
+        .action-icon {
+            font-size: 20px;
+        }
+        
+        .action-label {
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .action-count {
+            font-size: 11px;
+            color: #64748B;
+            margin-top: 1px;
+        }
+        
+        .reading-progress {
+            position: fixed;
+            top: 54px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #e2e8f0;
+            z-index: 101;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #1E3A8A, #3B82F6);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+        
+        .subscription-notice {
+            background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+            color: white;
+            padding: 20px 24px;
+            margin: 32px -24px;
+            text-align: center;
+        }
+        
+        .subscription-notice h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .subscription-notice p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        
+        .subscribe-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .subscribe-btn:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.98);
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="reading-progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="app-content" id="articleContent">
+                <div class="article-header">
+                    <div class="header-actions">
+                        <div class="back-btn" onclick="goBack()">←</div>
+                        <div class="header-right">
+                            <div class="header-btn" onclick="shareArticle()">↗️</div>
+                            <div class="header-btn" onclick="showMore()">⋯</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="article-content">
+                    <h1 class="article-title">React Native 开发实战指南</h1>
+                    
+                    <div class="article-meta">
+                        <div class="author-info">
+                            <div class="author-avatar">李</div>
+                            <div class="author-details">
+                                <h4>李明</h4>
+                                <p>资深全栈工程师 · 2天前</p>
+                            </div>
+                        </div>
+                        <button class="follow-btn" onclick="toggleFollow()">关注</button>
+                    </div>
+                    
+                    <div class="article-body">
+                        <p>React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始，带你了解 React Native 开发的各个方面，从环境搭建到实际项目部署。</p>
+                        
+                        <h2>前言</h2>
+                        <p>在当今快速发展的移动互联网时代，能够高效开发跨平台应用的技术变得越来越重要。React Native 作为 Facebook 开源的跨平台移动应用开发框架，让开发者可以使用 JavaScript 编写原生移动应用。</p>
+                        
+                        <h2>环境搭建</h2>
+                        <p>首先，我们需要搭建开发环境。这是开发 React Native 应用的第一步，也是最重要的基础。</p>
+                        
+                        <pre><code>npm install -g @react-native-community/cli
+npx react-native init MyProject</code></pre>
+                        
+                        <h3>开发工具推荐</h3>
+                        <ul>
+                            <li><strong>VS Code</strong> - 强大的代码编辑器，支持丰富的插件</li>
+                            <li><strong>Flipper</strong> - Facebook 出品的移动应用调试平台</li>
+                            <li><strong>Reactotron</strong> - 专门为 React 和 React Native 设计的调试工具</li>
+                        </ul>
+                        
+                        <h2>核心概念</h2>
+                        
+                        <h3>组件生命周期</h3>
+                        <p>React Native 组件具有以下主要生命周期方法：</p>
+                        <ul>
+                            <li><code>componentDidMount()</code> - 组件挂载后调用</li>
+                            <li><code>componentWillUnmount()</code> - 组件卸载前调用</li>
+                            <li><code>useEffect()</code> - Hook 版本的生命周期管理</li>
+                        </ul>
+                        
+                        <blockquote>
+                            <strong>提示</strong>: 使用 Hooks 可以让代码更简洁和易于维护，这是现代 React 开发的推荐方式。
+                        </blockquote>
+                        
+                        <div class="subscription-notice">
+                            <h3>🔒 精彩内容，会员专享</h3>
+                            <p>后续内容包含完整的项目实战案例和性能优化技巧</p>
+                            <button class="subscribe-btn" onclick="showSubscription()">立即订阅 ¥29/月</button>
+                        </div>
+                        
+                        <h2>性能优化</h2>
+                        <p>性能优化是 React Native 开发中的重要话题。通过合理的优化策略，可以显著提升应用的用户体验。</p>
+                        
+                        <h3>渲染优化</h3>
+                        <ol>
+                            <li><strong>使用 FlatList</strong> 代替 ScrollView 处理大量数据</li>
+                            <li><strong>实现 shouldComponentUpdate</strong> 或使用 React.memo</li>
+                            <li><strong>避免在 render 中创建新对象</strong></li>
+                        </ol>
+                        
+                        <h2>总结</h2>
+                        <p>React Native 提供了强大的跨平台开发能力，通过本文的介绍，你应该对 RN 开发有了基本的了解。记住，实践是学习的最佳方式！</p>
+                        
+                        <p><strong>下一篇文章预告</strong>: 我们将深入探讨 React Native 的导航系统和状态管理最佳实践。</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article-actions">
+                <div class="action-btn" id="likeBtn" onclick="toggleLike()">
+                    <div class="action-icon">🤍</div>
+                    <div class="action-label">点赞</div>
+                    <div class="action-count" id="likeCount">128</div>
+                </div>
+                
+                <div class="action-btn" id="bookmarkBtn" onclick="toggleBookmark()">
+                    <div class="action-icon">🔖</div>
+                    <div class="action-label">收藏</div>
+                </div>
+                
+                <div class="action-btn" onclick="showComments()">
+                    <div class="action-icon">💬</div>
+                    <div class="action-label">评论</div>
+                    <div class="action-count">23</div>
+                </div>
+                
+                <div class="action-btn" onclick="shareArticle()">
+                    <div class="action-icon">📤</div>
+                    <div class="action-label">分享</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let isLiked = false;
+        let isBookmarked = false;
+        let isFollowing = false;
+        let likeCount = 128;
+        
+        function goBack() {
+            console.log('返回上一页');
+            alert('返回文章列表');
+        }
+        
+        function shareArticle() {
+            console.log('分享文章');
+            if (navigator.share) {
+                navigator.share({
+                    title: 'React Native 开发实战指南',
+                    text: 'React Native 已经成为跨平台移动应用开发的首选框架之一。',
+                    url: window.location.href
+                });
+            } else {
+                alert('文章链接已复制到剪贴板');
+            }
+        }
+        
+        function showMore() {
+            console.log('显示更多选项');
+            alert('更多选项:\n• 举报文章\n• 不感兴趣\n• 复制链接');
+        }
+        
+        function toggleFollow() {
+            const followBtn = document.querySelector('.follow-btn');
+            if (isFollowing) {
+                followBtn.textContent = '关注';
+                followBtn.classList.remove('following');
+                isFollowing = false;
+                alert('已取消关注');
+            } else {
+                followBtn.textContent = '已关注';
+                followBtn.classList.add('following');
+                isFollowing = true;
+                alert('已关注作者');
+            }
+        }
+        
+        function toggleLike() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeIcon = likeBtn.querySelector('.action-icon');
+            const likeCountEl = document.getElementById('likeCount');
+            
+            if (isLiked) {
+                likeIcon.textContent = '🤍';
+                likeBtn.classList.remove('liked');
+                likeCount--;
+                isLiked = false;
+            } else {
+                likeIcon.textContent = '❤️';
+                likeBtn.classList.add('liked');
+                likeCount++;
+                isLiked = true;
+                
+                // 点赞动画
+                likeBtn.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    likeBtn.style.transform = '';
+                }, 200);
+            }
+            
+            likeCountEl.textContent = likeCount;
+        }
+        
+        function toggleBookmark() {
+            const bookmarkBtn = document.getElementById('bookmarkBtn');
+            const bookmarkIcon = bookmarkBtn.querySelector('.action-icon');
+            
+            if (isBookmarked) {
+                bookmarkIcon.textContent = '🔖';
+                bookmarkBtn.classList.remove('bookmarked');
+                isBookmarked = false;
+                alert('已取消收藏');
+            } else {
+                bookmarkIcon.textContent = '📑';
+                bookmarkBtn.classList.add('bookmarked');
+                isBookmarked = true;
+                alert('已收藏到书签');
+                
+                // 收藏动画
+                bookmarkBtn.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    bookmarkBtn.style.transform = '';
+                }, 200);
+            }
+        }
+        
+        function showComments() {
+            console.log('显示评论');
+            alert('评论功能开发中...');
+        }
+        
+        function showSubscription() {
+            console.log('显示订阅选项');
+            if (confirm('订阅李明的内容，每月仅需 ¥29\n\n• 无限文章阅读\n• 专属内容访问\n• 优先客服支持\n\n确定订阅吗？')) {
+                alert('订阅成功！您现在可以阅读全部内容了');
+            }
+        }
+        
+        // 阅读进度条
+        function updateReadingProgress() {
+            const content = document.getElementById('articleContent');
+            const progressBar = document.getElementById('progressBar');
+            
+            const scrollTop = content.scrollTop;
+            const scrollHeight = content.scrollHeight - content.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            
+            progressBar.style.width = Math.min(progress, 100) + '%';
+        }
+        
+        // 监听滚动事件
+        document.getElementById('articleContent').addEventListener('scroll', updateReadingProgress);
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.back-btn, .header-btn, .follow-btn, .action-btn, .subscribe-btn');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+        
+        // 防止页面滚动时误触底部导航
+        let lastScrollY = 0;
+        document.getElementById('articleContent').addEventListener('scroll', function() {
+            const currentScrollY = this.scrollTop;
+            const actions = document.querySelector('.article-actions');
+            
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                // 向下滚动，隐藏操作栏
+                actions.style.transform = 'translateX(-50%) translateY(100px)';
+                actions.style.opacity = '0';
+            } else {
+                // 向上滚动，显示操作栏
+                actions.style.transform = 'translateX(-50%) translateY(0)';
+                actions.style.opacity = '1';
+            }
+            
+            lastScrollY = currentScrollY;
+        });
+    </script>
+</body>
+</html>

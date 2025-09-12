@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: #1E3A8A;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #f8fafc;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .header {
+            background: #1E3A8A;
+            color: white;
+            padding: 16px 20px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        
+        .header-icons {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(0.95);
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,0.9);
+            border-radius: 20px;
+            padding: 8px 16px;
+            color: #333;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+        }
+        
+        .search-input::placeholder {
+            color: #666;
+        }
+        
+        .category-tabs {
+            display: flex;
+            padding: 12px 20px;
+            gap: 8px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+        
+        .category-tab {
+            padding: 6px 16px;
+            border-radius: 16px;
+            background: #f1f5f9;
+            color: #64748B;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .category-tab.active {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .content-feed {
+            padding: 16px 20px;
+        }
+        
+        .featured-banner {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .banner-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .banner-desc {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+        
+        .banner-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .banner-btn:active {
+            background: rgba(255,255,255,0.3);
+            transform: scale(0.98);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        .more-link {
+            font-size: 13px;
+            color: #1E3A8A;
+            cursor: pointer;
+        }
+        
+        .creators-list {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .creator-card {
+            min-width: 120px;
+            background: white;
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .creator-card:active {
+            transform: scale(0.98);
+            background: #f8fafc;
+        }
+        
+        .creator-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin: 0 auto 8px;
+        }
+        
+        .creator-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .creator-desc {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .articles-list {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .article-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .article-card:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .article-thumbnail {
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #94a3b8;
+        }
+        
+        .article-content {
+            padding: 16px;
+        }
+        
+        .article-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .article-excerpt {
+            font-size: 13px;
+            color: #64748B;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .article-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .author-info {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .article-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .bottom-nav {
+            height: 88px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 8px 40px 32px 40px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #1E3A8A;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="header">
+                    <div class="header-top">
+                        <div class="logo">ShareStack</div>
+                        <div class="header-icons">
+                            <div class="icon-btn" onclick="showNotifications()">🔔</div>
+                            <div class="icon-btn" onclick="showProfile()">👤</div>
+                        </div>
+                    </div>
+                    
+                    <div class="search-bar">
+                        <span>🔍</span>
+                        <input type="text" class="search-input" placeholder="搜索感兴趣的内容...">
+                    </div>
+                </div>
+                
+                <div class="category-tabs">
+                    <div class="category-tab active" onclick="switchCategory('all', this)">全部</div>
+                    <div class="category-tab" onclick="switchCategory('tech', this)">技术</div>
+                    <div class="category-tab" onclick="switchCategory('business', this)">商业</div>
+                    <div class="category-tab" onclick="switchCategory('design', this)">设计</div>
+                    <div class="category-tab" onclick="switchCategory('life', this)">生活</div>
+                    <div class="category-tab" onclick="switchCategory('finance', this)">理财</div>
+                </div>
+                
+                <div class="content-feed">
+                    <div class="featured-banner">
+                        <div class="banner-title">🎯 发现优质创作者</div>
+                        <div class="banner-desc">订阅你感兴趣的创作者，获取第一手优质内容</div>
+                        <button class="banner-btn">立即探索</button>
+                    </div>
+                    
+                    <div class="section-header">
+                        <div class="section-title">推荐创作者</div>
+                        <div class="more-link" onclick="viewMore('creators')">查看更多</div>
+                    </div>
+                    
+                    <div class="creators-list">
+                        <div class="creator-card" onclick="viewCreator('1')">
+                            <div class="creator-avatar">李</div>
+                            <div class="creator-name">李明</div>
+                            <div class="creator-desc">技术专家</div>
+                        </div>
+                        <div class="creator-card" onclick="viewCreator('2')">
+                            <div class="creator-avatar">张</div>
+                            <div class="creator-name">张小云</div>
+                            <div class="creator-desc">产品经理</div>
+                        </div>
+                        <div class="creator-card" onclick="viewCreator('3')">
+                            <div class="creator-avatar">王</div>
+                            <div class="creator-name">王设计</div>
+                            <div class="creator-desc">UI设计师</div>
+                        </div>
+                        <div class="creator-card" onclick="viewCreator('4')">
+                            <div class="creator-avatar">刘</div>
+                            <div class="creator-name">刘投资</div>
+                            <div class="creator-desc">投资顾问</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section-header">
+                        <div class="section-title">热门文章</div>
+                        <div class="more-link" onclick="viewMore('articles')">查看更多</div>
+                    </div>
+                    
+                    <div class="articles-list">
+                        <div class="article-card" onclick="openArticle('1')">
+                            <div class="article-thumbnail">📱</div>
+                            <div class="article-content">
+                                <div class="article-title">React Native 开发实战指南</div>
+                                <div class="article-excerpt">React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始...</div>
+                                <div class="article-meta">
+                                    <div class="article-author">
+                                        <div class="author-avatar">李</div>
+                                        <div class="author-info">李明 • 2天前</div>
+                                    </div>
+                                    <div class="article-stats">
+                                        <div class="stat-item">
+                                            <span>👁️</span>
+                                            <span>2.3k</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>❤️</span>
+                                            <span>128</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="article-card" onclick="openArticle('2')">
+                            <div class="article-thumbnail">💼</div>
+                            <div class="article-content">
+                                <div class="article-title">创业公司如何制定产品策略</div>
+                                <div class="article-excerpt">在快速变化的市场环境中，制定正确的产品策略是创业公司成功的关键...</div>
+                                <div class="article-meta">
+                                    <div class="article-author">
+                                        <div class="author-avatar">张</div>
+                                        <div class="author-info">张小云 • 3天前</div>
+                                    </div>
+                                    <div class="article-stats">
+                                        <div class="stat-item">
+                                            <span>👁️</span>
+                                            <span>1.9k</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>❤️</span>
+                                            <span>89</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="article-card" onclick="openArticle('3')">
+                            <div class="article-thumbnail">🎨</div>
+                            <div class="article-content">
+                                <div class="article-title">UI设计系统搭建完全指南</div>
+                                <div class="article-excerpt">设计系统是现代产品开发中不可或缺的工具，它能够提升设计效率...</div>
+                                <div class="article-meta">
+                                    <div class="article-author">
+                                        <div class="author-avatar">王</div>
+                                        <div class="author-info">王设计 • 1周前</div>
+                                    </div>
+                                    <div class="article-stats">
+                                        <div class="stat-item">
+                                            <span>👁️</span>
+                                            <span>1.5k</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>❤️</span>
+                                            <span>67</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="article-card" onclick="openArticle('4')">
+                            <div class="article-thumbnail">💰</div>
+                            <div class="article-content">
+                                <div class="article-title">2024年投资趋势分析报告</div>
+                                <div class="article-excerpt">深度分析2024年各行业投资机会，为投资者提供专业的决策参考...</div>
+                                <div class="article-meta">
+                                    <div class="article-author">
+                                        <div class="author-avatar">刘</div>
+                                        <div class="author-info">刘投资 • 5天前</div>
+                                    </div>
+                                    <div class="article-stats">
+                                        <div class="stat-item">
+                                            <span>👁️</span>
+                                            <span>3.2k</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span>❤️</span>
+                                            <span>256</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item active">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">首页</div>
+                </div>
+                <div class="nav-item" onclick="navigate('discovery')">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">发现</div>
+                </div>
+                <div class="nav-item" onclick="navigate('profile')">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">我的</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchCategory(category, element) {
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            console.log('切换分类:', category);
+            // 这里可以添加加载对应分类内容的逻辑
+        }
+        
+        function openArticle(id) {
+            console.log('打开文章:', id);
+            // 模拟页面跳转
+            document.body.style.background = '#333';
+            setTimeout(() => {
+                document.body.style.background = '#f0f2f5';
+                alert(`即将打开文章 ${id}\n(在实际应用中这里会跳转到文章详情页)`);
+            }, 200);
+        }
+        
+        function viewCreator(id) {
+            console.log('查看创作者:', id);
+            alert(`查看创作者 ${id} 的个人页面`);
+        }
+        
+        function viewMore(type) {
+            console.log('查看更多:', type);
+            alert(`查看更多${type === 'creators' ? '创作者' : '文章'}`);
+        }
+        
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('导航到:', page);
+            alert(`导航到${page}页面`);
+        }
+        
+        function showNotifications() {
+            alert('通知功能开发中...');
+        }
+        
+        function showProfile() {
+            alert('个人资料页面');
+        }
+        
+        // 模拟下拉刷新
+        let startY = 0;
+        let currentY = 0;
+        let isRefreshing = false;
+        
+        const content = document.querySelector('.app-content');
+        
+        content.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+        
+        content.addEventListener('touchmove', (e) => {
+            if (isRefreshing) return;
+            
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            
+            if (diff > 0 && content.scrollTop === 0) {
+                e.preventDefault();
+                if (diff > 100) {
+                    content.style.transform = `translateY(${Math.min(diff * 0.5, 50)}px)`;
+                }
+            }
+        });
+        
+        content.addEventListener('touchend', (e) => {
+            if (isRefreshing) return;
+            
+            const diff = currentY - startY;
+            
+            if (diff > 100 && content.scrollTop === 0) {
+                isRefreshing = true;
+                content.style.transform = 'translateY(50px)';
+                content.style.transition = 'transform 0.3s';
+                
+                setTimeout(() => {
+                    content.style.transform = 'translateY(0)';
+                    setTimeout(() => {
+                        content.style.transition = '';
+                        isRefreshing = false;
+                        console.log('刷新完成');
+                    }, 300);
+                }, 1500);
+            } else {
+                content.style.transform = 'translateY(0)';
+                content.style.transition = 'transform 0.3s';
+                setTimeout(() => {
+                    content.style.transition = '';
+                }, 300);
+            }
+        });
+        
+        // 模拟搜索功能
+        document.querySelector('.search-input').addEventListener('focus', function() {
+            this.placeholder = '输入关键词搜索...';
+        });
+        
+        document.querySelector('.search-input').addEventListener('blur', function() {
+            this.placeholder = '搜索感兴趣的内容...';
+        });
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

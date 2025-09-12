@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack Mobile - 搜索</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #1d1d1f;
+            border-radius: 50px;
+            padding: 8px;
+            box-shadow: 
+                0 0 0 2px #2d2d2f,
+                0 0 0 6px #1d1d1f,
+                0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 25px;
+            background: #1d1d1f;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+        
+        .phone-frame::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            z-index: 11;
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 42px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 54px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 30px 0 30px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .app-content {
+            flex: 1;
+            background: #f8fafc;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .search-header {
+            background: white;
+            padding: 12px 16px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .search-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .back-btn:active {
+            background: #f1f5f9;
+            transform: scale(0.95);
+        }
+        
+        .search-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 20px;
+            padding: 8px 16px;
+            position: relative;
+        }
+        
+        .search-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+            margin-left: 8px;
+        }
+        
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .clear-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #94a3b8;
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        
+        .clear-btn.show {
+            display: flex;
+        }
+        
+        .search-content {
+            padding: 20px;
+        }
+        
+        .search-suggestions {
+            margin-bottom: 32px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 16px;
+        }
+        
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-item:active {
+            opacity: 0.7;
+        }
+        
+        .suggestion-icon {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+        
+        .suggestion-text {
+            font-size: 16px;
+            color: #374151;
+        }
+        
+        .suggestion-arrow {
+            margin-left: auto;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        
+        .hot-searches {
+            margin-bottom: 32px;
+        }
+        
+        .hot-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .hot-tag {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .hot-tag:active {
+            background: #f8fafc;
+            transform: scale(0.98);
+        }
+        
+        .hot-tag.trending {
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            color: white;
+            border: none;
+        }
+        
+        .search-history {
+            margin-bottom: 32px;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .clear-history {
+            font-size: 14px;
+            color: #64748B;
+            cursor: pointer;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .history-item:active {
+            opacity: 0.7;
+        }
+        
+        .history-icon {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+        
+        .history-text {
+            font-size: 15px;
+            color: #64748B;
+            flex: 1;
+        }
+        
+        .history-remove {
+            font-size: 16px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .search-results {
+            display: none;
+        }
+        
+        .search-results.show {
+            display: block;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .results-count {
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #64748B;
+            cursor: pointer;
+        }
+        
+        .result-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .result-item:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .result-type {
+            font-size: 12px;
+            color: #64748B;
+            margin-bottom: 8px;
+        }
+        
+        .result-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .result-snippet {
+            font-size: 14px;
+            color: #64748B;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .result-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        
+        .result-author {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .author-avatar {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            color: #d97706;
+            font-weight: 600;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            display: none;
+        }
+        
+        .no-results.show {
+            display: block;
+        }
+        
+        .no-results-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .no-results-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .no-results-desc {
+            font-size: 14px;
+            color: #64748B;
+        }
+        
+        .bottom-nav {
+            height: 88px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding: 8px 40px 32px 40px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+        
+        .nav-item.active {
+            color: #1E3A8A;
+        }
+        
+        .nav-item.active .nav-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            transition: all 0.2s;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+        
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>🔋</span>
+                    <span>📶</span>
+                    <span>📡</span>
+                </div>
+            </div>
+            
+            <div class="app-content">
+                <div class="search-header">
+                    <div class="search-bar-container">
+                        <div class="back-btn" onclick="goBack()">←</div>
+                        <div class="search-bar">
+                            <span>🔍</span>
+                            <input 
+                                type="text" 
+                                class="search-input" 
+                                placeholder="搜索文章、作者、话题..." 
+                                id="searchInput"
+                                oninput="handleSearchInput()"
+                                onkeydown="handleKeyDown(event)"
+                            >
+                            <div class="clear-btn" onclick="clearSearch()" id="clearBtn">×</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="search-content">
+                    <!-- 搜索建议 -->
+                    <div class="search-page" id="searchPage">
+                        <div class="search-suggestions">
+                            <h3 class="section-title">搜索建议</h3>
+                            <div class="suggestions-list">
+                                <div class="suggestion-item" onclick="searchSuggestion('React Native 开发教程')">
+                                    <span class="suggestion-icon">📱</span>
+                                    <span class="suggestion-text">React Native 开发教程</span>
+                                    <span class="suggestion-arrow">↗️</span>
+                                </div>
+                                <div class="suggestion-item" onclick="searchSuggestion('前端面试题')">
+                                    <span class="suggestion-icon">💼</span>
+                                    <span class="suggestion-text">前端面试题</span>
+                                    <span class="suggestion-arrow">↗️</span>
+                                </div>
+                                <div class="suggestion-item" onclick="searchSuggestion('JavaScript 进阶')">
+                                    <span class="suggestion-icon">⚡</span>
+                                    <span class="suggestion-text">JavaScript 进阶</span>
+                                    <span class="suggestion-arrow">↗️</span>
+                                </div>
+                                <div class="suggestion-item" onclick="searchSuggestion('创业经验分享')">
+                                    <span class="suggestion-icon">🚀</span>
+                                    <span class="suggestion-text">创业经验分享</span>
+                                    <span class="suggestion-arrow">↗️</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="hot-searches">
+                            <h3 class="section-title">热门搜索</h3>
+                            <div class="hot-tags">
+                                <div class="hot-tag trending" onclick="searchTag('AI')">🔥 AI</div>
+                                <div class="hot-tag" onclick="searchTag('React')">React</div>
+                                <div class="hot-tag" onclick="searchTag('投资理财')">投资理财</div>
+                                <div class="hot-tag" onclick="searchTag('产品设计')">产品设计</div>
+                                <div class="hot-tag" onclick="searchTag('创业')">创业</div>
+                                <div class="hot-tag" onclick="searchTag('Python')">Python</div>
+                                <div class="hot-tag" onclick="searchTag('UI设计')">UI设计</div>
+                                <div class="hot-tag trending" onclick="searchTag('区块链')">🔥 区块链</div>
+                            </div>
+                        </div>
+                        
+                        <div class="search-history" id="searchHistory">
+                            <div class="history-header">
+                                <h3 class="section-title">搜索历史</h3>
+                                <span class="clear-history" onclick="clearHistory()">清除</span>
+                            </div>
+                            <div class="history-list" id="historyList">
+                                <div class="history-item" onclick="searchHistory('React Native 性能优化')">
+                                    <span class="history-icon">🕒</span>
+                                    <span class="history-text">React Native 性能优化</span>
+                                    <span class="history-remove" onclick="removeHistory(event, 'React Native 性能优化')">×</span>
+                                </div>
+                                <div class="history-item" onclick="searchHistory('创业融资')">
+                                    <span class="history-icon">🕒</span>
+                                    <span class="history-text">创业融资</span>
+                                    <span class="history-remove" onclick="removeHistory(event, '创业融资')">×</span>
+                                </div>
+                                <div class="history-item" onclick="searchHistory('设计系统')">
+                                    <span class="history-icon">🕒</span>
+                                    <span class="history-text">设计系统</span>
+                                    <span class="history-remove" onclick="removeHistory(event, '设计系统')">×</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 搜索结果 -->
+                    <div class="search-results" id="searchResults">
+                        <div class="results-header">
+                            <span class="results-count" id="resultsCount">找到 0 个结果</span>
+                            <button class="filter-btn" onclick="showFilter()">筛选</button>
+                        </div>
+                        
+                        <div class="results-list" id="resultsList">
+                            <!-- 搜索结果将动态插入这里 -->
+                        </div>
+                        
+                        <div class="no-results" id="noResults">
+                            <div class="no-results-icon">🔍</div>
+                            <div class="no-results-title">未找到相关内容</div>
+                            <div class="no-results-desc">试试其他关键词或浏览热门内容</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bottom-nav">
+                <div class="nav-item" onclick="navigate('home')">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">首页</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">发现</div>
+                </div>
+                <div class="nav-item" onclick="navigate('profile')">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">我的</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let searchHistory = ['React Native 性能优化', '创业融资', '设计系统'];
+        let isSearching = false;
+        
+        function goBack() {
+            console.log('返回上一页');
+            alert('返回发现页面');
+        }
+        
+        function handleSearchInput() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearBtn');
+            const searchValue = input.value.trim();
+            
+            if (searchValue.length > 0) {
+                clearBtn.classList.add('show');
+                
+                // 延迟搜索以避免频繁请求
+                if (!isSearching) {
+                    isSearching = true;
+                    setTimeout(() => {
+                        performSearch(searchValue);
+                        isSearching = false;
+                    }, 500);
+                }
+            } else {
+                clearBtn.classList.remove('show');
+                showSearchPage();
+            }
+        }
+        
+        function handleKeyDown(event) {
+            if (event.key === 'Enter') {
+                const searchValue = document.getElementById('searchInput').value.trim();
+                if (searchValue) {
+                    performSearch(searchValue);
+                    addToHistory(searchValue);
+                }
+            }
+        }
+        
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearBtn').classList.remove('show');
+            showSearchPage();
+        }
+        
+        function searchSuggestion(query) {
+            document.getElementById('searchInput').value = query;
+            performSearch(query);
+            addToHistory(query);
+        }
+        
+        function searchTag(tag) {
+            document.getElementById('searchInput').value = tag;
+            performSearch(tag);
+            addToHistory(tag);
+        }
+        
+        function searchHistory(query) {
+            document.getElementById('searchInput').value = query;
+            performSearch(query);
+        }
+        
+        function performSearch(query) {
+            console.log('搜索:', query);
+            
+            // 隐藏搜索页面，显示结果页面
+            document.getElementById('searchPage').style.display = 'none';
+            document.getElementById('searchResults').classList.add('show');
+            
+            // 模拟搜索结果
+            const mockResults = [
+                {
+                    type: '文章',
+                    title: 'React Native 开发实战指南',
+                    snippet: 'React Native 已经成为跨平台移动应用开发的首选框架之一。本文将从零开始，带你了解 React Native 开发的各个方面...',
+                    author: '李明',
+                    date: '2天前',
+                    views: '2.3k'
+                },
+                {
+                    type: '作者',
+                    title: '张小云',
+                    snippet: '资深产品经理，专注移动产品设计和用户体验优化，已发布 45 篇优质文章...',
+                    author: '产品专家',
+                    date: '活跃',
+                    views: '1.2k 关注'
+                },
+                {
+                    type: '文章',
+                    title: '从零开始学习 React Native',
+                    snippet: '这是一个完整的 React Native 学习路径，包含环境搭建、基础组件、导航系统等内容...',
+                    author: '王开发',
+                    date: '1周前',
+                    views: '1.8k'
+                }
+            ];
+            
+            const filteredResults = mockResults.filter(result => 
+                result.title.toLowerCase().includes(query.toLowerCase()) ||
+                result.snippet.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            displayResults(filteredResults, query);
+        }
+        
+        function displayResults(results, query) {
+            const resultsList = document.getElementById('resultsList');
+            const resultsCount = document.getElementById('resultsCount');
+            const noResults = document.getElementById('noResults');
+            
+            resultsCount.textContent = `找到 ${results.length} 个结果`;
+            
+            if (results.length === 0) {
+                resultsList.innerHTML = '';
+                noResults.classList.add('show');
+                return;
+            }
+            
+            noResults.classList.remove('show');
+            
+            const resultsHTML = results.map(result => {
+                const highlightedTitle = highlightText(result.title, query);
+                const highlightedSnippet = highlightText(result.snippet, query);
+                
+                return `
+                    <div class="result-item" onclick="openResult('${result.type}', '${result.title}')">
+                        <div class="result-type">${result.type}</div>
+                        <div class="result-title">${highlightedTitle}</div>
+                        <div class="result-snippet">${highlightedSnippet}</div>
+                        <div class="result-meta">
+                            <div class="result-author">
+                                <div class="author-avatar"></div>
+                                <span>${result.author}</span>
+                            </div>
+                            <span>•</span>
+                            <span>${result.date}</span>
+                            <span>•</span>
+                            <span>${result.views} 阅读</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultsList.innerHTML = resultsHTML;
+        }
+        
+        function highlightText(text, query) {
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+        
+        function showSearchPage() {
+            document.getElementById('searchPage').style.display = 'block';
+            document.getElementById('searchResults').classList.remove('show');
+        }
+        
+        function addToHistory(query) {
+            if (!searchHistory.includes(query)) {
+                searchHistory.unshift(query);
+                if (searchHistory.length > 10) {
+                    searchHistory.pop();
+                }
+                updateHistoryDisplay();
+            }
+        }
+        
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            const historyHTML = searchHistory.map(item => `
+                <div class="history-item" onclick="searchHistory('${item}')">
+                    <span class="history-icon">🕒</span>
+                    <span class="history-text">${item}</span>
+                    <span class="history-remove" onclick="removeHistory(event, '${item}')">×</span>
+                </div>
+            `).join('');
+            
+            historyList.innerHTML = historyHTML;
+        }
+        
+        function removeHistory(event, item) {
+            event.stopPropagation();
+            searchHistory = searchHistory.filter(h => h !== item);
+            updateHistoryDisplay();
+        }
+        
+        function clearHistory() {
+            searchHistory = [];
+            updateHistoryDisplay();
+            alert('搜索历史已清除');
+        }
+        
+        function openResult(type, title) {
+            console.log('打开搜索结果:', type, title);
+            alert(`打开${type}: ${title}`);
+        }
+        
+        function showFilter() {
+            alert('搜索筛选\n\n• 内容类型\n• 发布时间\n• 作者\n• 热度排序');
+        }
+        
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            console.log('导航到:', page);
+            alert(`导航到${page}页面`);
+        }
+        
+        // 阻止选中文本
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+        
+        // 触摸反馈
+        const touchElements = document.querySelectorAll('.back-btn, .clear-btn, .suggestion-item, .hot-tag, .history-item, .result-item');
+        
+        touchElements.forEach(element => {
+            element.addEventListener('touchstart', function() {
+                this.style.opacity = '0.7';
+            });
+            
+            element.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.opacity = '';
+                }, 100);
+            });
+        });
+        
+        // 页面加载时聚焦搜索框
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('searchInput').focus();
+        });
+    </script>
+</body>
+</html>

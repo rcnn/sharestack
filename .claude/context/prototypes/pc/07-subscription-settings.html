@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack - 订阅设置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+        }
+        
+        .sidebar-header {
+            padding: 0 24px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1E3A8A;
+            margin-bottom: 8px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #1E3A8A, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .user-details h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 2px;
+        }
+        
+        .user-details p {
+            font-size: 12px;
+            color: #64748B;
+        }
+        
+        .nav-menu {
+            padding-top: 24px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 24px;
+            color: #64748B;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-right: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: #f1f5f9;
+            color: #1E3A8A;
+            border-right-color: #1E3A8A;
+        }
+        
+        .nav-icon {
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            margin-bottom: 32px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .page-desc {
+            color: #64748B;
+            font-size: 16px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            gap: 24px;
+            max-width: 800px;
+        }
+        
+        .settings-card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .card-header {
+            margin-bottom: 24px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .card-desc {
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .plan-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .plan-card:hover {
+            border-color: #1E3A8A;
+            transform: translateY(-2px);
+        }
+        
+        .plan-card.popular {
+            border-color: #F97316;
+            background: #fffbeb;
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #F97316;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .plan-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .plan-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .plan-desc {
+            color: #64748B;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .price-symbol {
+            font-size: 16px;
+            color: #64748B;
+        }
+        
+        .price-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1E293B;
+        }
+        
+        .price-period {
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+        
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            color: #374151;
+            font-size: 14px;
+        }
+        
+        .feature-icon {
+            color: #10B981;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #1E3A8A;
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #1E3A8A;
+            border: 2px solid #1E3A8A;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #1E3A8A;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #1E3A8A;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .settings-row:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-info h4 {
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .setting-info p {
+            color: #64748B;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            color: #64748B;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">ShareStack</div>
+                <div class="user-info">
+                    <div class="user-avatar">李</div>
+                    <div class="user-details">
+                        <h3>李明</h3>
+                        <p>创作者</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="04-dashboard.html" class="nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>概览</span>
+                </a>
+                <a href="05-content-editor.html" class="nav-item">
+                    <span class="nav-icon">✍️</span>
+                    <span>写文章</span>
+                </a>
+                <a href="06-content-management.html" class="nav-item">
+                    <span class="nav-icon">📝</span>
+                    <span>内容管理</span>
+                </a>
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon">💰</span>
+                    <span>订阅设置</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>订阅者</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">📈</span>
+                    <span>数据分析</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">💳</span>
+                    <span>收入报表</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <span class="nav-icon">⚙️</span>
+                    <span>设置</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">订阅设置</h1>
+                <p class="page-desc">设置您的订阅计划，开始获得收入</p>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">订阅统计</h2>
+                        <p class="card-desc">查看您的订阅数据概况</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">1,234</div>
+                            <div class="stat-label">总订阅者</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">¥12,486</div>
+                            <div class="stat-label">月收入</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">85%</div>
+                            <div class="stat-label">续费率</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">¥10.12</div>
+                            <div class="stat-label">平均客单价</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">订阅计划</h2>
+                        <p class="card-desc">设置不同层级的订阅计划</p>
+                    </div>
+                    
+                    <div class="plan-grid">
+                        <div class="plan-card">
+                            <div class="plan-header">
+                                <h3 class="plan-name">免费订阅</h3>
+                                <p class="plan-desc">基础内容访问</p>
+                                <div class="plan-price">
+                                    <span class="price-symbol">¥</span>
+                                    <span class="price-amount">0</span>
+                                    <span class="price-period">/月</span>
+                                </div>
+                            </div>
+                            
+                            <ul class="plan-features">
+                                <li><span class="feature-icon">✓</span> 免费文章阅读</li>
+                                <li><span class="feature-icon">✓</span> 基础评论功能</li>
+                                <li><span class="feature-icon">✓</span> 社区讨论</li>
+                                <li><span class="feature-icon">✓</span> 邮件通知</li>
+                            </ul>
+                            
+                            <button class="btn btn-outline">当前计划</button>
+                        </div>
+                        
+                        <div class="plan-card popular">
+                            <div class="popular-badge">推荐</div>
+                            <div class="plan-header">
+                                <h3 class="plan-name">标准订阅</h3>
+                                <p class="plan-desc">获得全部优质内容</p>
+                                <div class="plan-price">
+                                    <span class="price-symbol">¥</span>
+                                    <span class="price-amount">29</span>
+                                    <span class="price-period">/月</span>
+                                </div>
+                            </div>
+                            
+                            <ul class="plan-features">
+                                <li><span class="feature-icon">✓</span> 全部付费文章</li>
+                                <li><span class="feature-icon">✓</span> 专属内容</li>
+                                <li><span class="feature-icon">✓</span> 优先客服</li>
+                                <li><span class="feature-icon">✓</span> 无广告体验</li>
+                                <li><span class="feature-icon">✓</span> 月度专栏</li>
+                            </ul>
+                            
+                            <button class="btn btn-primary">编辑计划</button>
+                        </div>
+                        
+                        <div class="plan-card">
+                            <div class="plan-header">
+                                <h3 class="plan-name">高级订阅</h3>
+                                <p class="plan-desc">专业用户专属</p>
+                                <div class="plan-price">
+                                    <span class="price-symbol">¥</span>
+                                    <span class="price-amount">99</span>
+                                    <span class="price-period">/月</span>
+                                </div>
+                            </div>
+                            
+                            <ul class="plan-features">
+                                <li><span class="feature-icon">✓</span> 包含标准版所有功能</li>
+                                <li><span class="feature-icon">✓</span> 一对一咨询</li>
+                                <li><span class="feature-icon">✓</span> 专属社群</li>
+                                <li><span class="feature-icon">✓</span> 早期内容访问</li>
+                                <li><span class="feature-icon">✓</span> 定制化服务</li>
+                            </ul>
+                            
+                            <button class="btn btn-primary">编辑计划</button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline" onclick="addNewPlan()">+ 添加新计划</button>
+                </div>
+                
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">订阅设置</h2>
+                        <p class="card-desc">管理订阅相关的配置选项</p>
+                    </div>
+                    
+                    <div class="settings-row">
+                        <div class="setting-info">
+                            <h4>自动续费</h4>
+                            <p>允许订阅者自动续费</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="settings-row">
+                        <div class="setting-info">
+                            <h4>试用期</h4>
+                            <p>为新订阅者提供免费试用</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="settings-row">
+                        <div class="setting-info">
+                            <h4>优惠券</h4>
+                            <p>允许使用优惠券和促销代码</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="settings-row">
+                        <div class="setting-info">
+                            <h4>邮件通知</h4>
+                            <p>订阅状态变更时发送邮件</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">欢迎消息</h2>
+                        <p class="card-desc">为新订阅者设置欢迎消息</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="welcome-title">欢迎标题</label>
+                        <input type="text" class="form-input" id="welcome-title" value="感谢您的订阅！" placeholder="输入欢迎标题...">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="welcome-message">欢迎内容</label>
+                        <textarea class="form-textarea" id="welcome-message" placeholder="输入欢迎消息内容...">欢迎成为我的订阅者！您将获得独家内容访问权限和优先客服支持。如有任何问题，随时联系我。</textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveWelcomeMessage()">保存设置</button>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function addNewPlan() {
+            alert('添加新订阅计划功能开发中...');
+        }
+        
+        function saveWelcomeMessage() {
+            const title = document.getElementById('welcome-title').value;
+            const message = document.getElementById('welcome-message').value;
+            
+            if (!title.trim()) {
+                alert('请输入欢迎标题');
+                return;
+            }
+            
+            alert('欢迎消息已保存！');
+        }
+        
+        // 切换开关事件处理
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const settingName = this.closest('.settings-row').querySelector('h4').textContent;
+                const isEnabled = this.checked ? '启用' : '禁用';
+                console.log(`${settingName}: ${isEnabled}`);
+            });
+        });
+    </script>
+</body>
+</html>

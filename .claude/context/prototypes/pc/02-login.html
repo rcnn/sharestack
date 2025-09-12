@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareStack - 登录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+        }
+        
+        .login-left {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .login-left-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .logo-large {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        
+        .login-left h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        
+        .login-left p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        .features {
+            margin-top: 40px;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .feature-icon {
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 12px;
+        }
+        
+        .login-right {
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        
+        .login-header p {
+            color: #64748B;
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.2s;
+            background: #F9FAFB;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #1E3A8A;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .form-input.error {
+            border-color: #DC2626;
+        }
+        
+        .error-message {
+            color: #DC2626;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+        
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 24px;
+        }
+        
+        .forgot-password a {
+            color: #1E3A8A;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: #1E3A8A;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #1E40AF;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 32px 0;
+            position: relative;
+            color: #9CA3AF;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #E5E7EB;
+            z-index: 1;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 16px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .social-btn {
+            padding: 12px;
+            border: 2px solid #E5E7EB;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .social-btn:hover {
+            border-color: #D1D5DB;
+            background: #F9FAFB;
+        }
+        
+        .signup-link {
+            text-align: center;
+            color: #6B7280;
+        }
+        
+        .signup-link a {
+            color: #1E3A8A;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        
+        .back-home:hover {
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+            
+            .login-left {
+                display: none;
+            }
+            
+            .login-right {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="01-homepage.html" class="back-home">
+        ← 返回首页
+    </a>
+    
+    <div class="login-container">
+        <div class="login-left">
+            <div class="login-left-content">
+                <div class="logo-large">ShareStack</div>
+                <h2>欢迎回来</h2>
+                <p>登录您的账户，继续您的知识学习之旅</p>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon">📚</div>
+                        <span>访问订阅的优质内容</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">👥</div>
+                        <span>与创作者直接互动</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <span>个性化学习推荐</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">💾</div>
+                        <span>同步收藏和阅读记录</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="login-right">
+            <div class="login-header">
+                <h1>登录账户</h1>
+                <p>使用邮箱或第三方账号登录</p>
+            </div>
+            
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label" for="email">邮箱地址</label>
+                    <input type="email" id="email" class="form-input" placeholder="请输入您的邮箱地址" required>
+                    <div class="error-message" id="email-error"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入您的密码" required>
+                    <div class="error-message" id="password-error"></div>
+                </div>
+                
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword()">忘记密码？</a>
+                </div>
+                
+                <button type="submit" class="btn">登录</button>
+            </form>
+            
+            <div class="divider">
+                <span>或者</span>
+            </div>
+            
+            <div class="social-login">
+                <button class="social-btn" onclick="loginWithWechat()">
+                    <span>💬</span>
+                    微信登录
+                </button>
+                <button class="social-btn" onclick="loginWithGoogle()">
+                    <span>🔍</span>
+                    Google
+                </button>
+            </div>
+            
+            <div class="signup-link">
+                还没有账户？<a href="03-register.html">立即注册</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // 简单验证
+            if (!email || !password) {
+                if (!email) {
+                    showError('email', '请输入邮箱地址');
+                }
+                if (!password) {
+                    showError('password', '请输入密码');
+                }
+                return;
+            }
+            
+            // 模拟登录过程
+            const btn = event.target.querySelector('.btn');
+            btn.textContent = '登录中...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                alert('登录成功！');
+                window.location.href = '04-dashboard.html';
+            }, 1500);
+        }
+        
+        function showError(field, message) {
+            const input = document.getElementById(field);
+            const errorDiv = document.getElementById(field + '-error');
+            
+            input.classList.add('error');
+            errorDiv.textContent = message;
+            
+            input.addEventListener('input', () => {
+                input.classList.remove('error');
+                errorDiv.textContent = '';
+            }, { once: true });
+        }
+        
+        function showForgotPassword() {
+            alert('密码重置链接已发送到您的邮箱');
+        }
+        
+        function loginWithWechat() {
+            alert('微信登录功能开发中...');
+        }
+        
+        function loginWithGoogle() {
+            alert('Google登录功能开发中...');
+        }
+        
+        // 清除错误状态
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.classList.remove('error');
+                const errorDiv = document.getElementById(input.id + '-error');
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
