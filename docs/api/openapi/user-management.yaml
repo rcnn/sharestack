@@ -1,0 +1,768 @@
+openapi: 3.0.3
+info:
+  title: ShareStack 用户管理 API
+  description: |
+    ShareStack 知识付费平台用户管理模块 API 接口文档。
+
+    ## 功能模块
+    - 认证授权：用户注册、登录、令牌管理
+    - 第三方登录：微信、Google、GitHub OAuth集成
+    - 用户资料：个人信息管理、头像上传
+
+    ## 认证方式
+    大部分接口需要在请求头中包含JWT令牌：
+    ```
+    Authorization: Bearer YOUR_ACCESS_TOKEN
+    ```
+  version: 1.0.0
+  contact:
+    name: ShareStack API Support
+    email: api-support@sharestack.com
+    url: https://sharestack.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.sharestack.com/api/v1
+    description: 生产环境
+  - url: https://staging-api.sharestack.com/api/v1
+    description: 测试环境
+  - url: http://localhost:8000/api/v1
+    description: 本地开发环境
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT令牌认证，格式：Bearer {token}
+
+  schemas:
+    # 通用响应结构
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功
+        data:
+          type: object
+          description: 响应数据
+        error:
+          $ref: '#/components/schemas/Error'
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 错误代码
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          description: 错误描述
+          example: 参数验证失败
+        details:
+          type: object
+          description: 错误详细信息
+
+    Meta:
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-09-15T01:07:11Z
+
+    # 用户相关数据结构
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: 用户ID
+          example: 12345
+        username:
+          type: string
+          description: 用户名
+          example: john_doe
+        email:
+          type: string
+          format: email
+          description: 邮箱地址
+          example: john@example.com
+        user_type:
+          type: string
+          enum: [reader, creator]
+          description: 用户类型
+        display_name:
+          type: string
+          description: 显示名称
+          example: John Doe
+        bio:
+          type: string
+          description: 个人简介
+          example: 分享技术和生活感悟的创作者
+        avatar:
+          type: string
+          format: uri
+          description: 头像URL
+          example: https://cdn.sharestack.com/avatars/12345.jpg
+        email_verified:
+          type: boolean
+          description: 邮箱是否已验证
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          description: 邮箱地址或用户名
+          example: john@example.com
+        password:
+          type: string
+          description: 密码
+          example: SecurePass123!
+        remember_me:
+          type: boolean
+          description: 是否记住登录状态
+          default: false
+
+    RegisterRequest:
+      type: object
+      required: [username, email, password, user_type, agree_terms]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: '^[a-zA-Z0-9_]+$'
+          description: 用户名，3-30字符，字母数字下划线
+          example: john_doe
+        email:
+          type: string
+          format: email
+          description: 邮箱地址
+          example: john@example.com
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: 密码，8-128字符，包含字母数字特殊字符
+          example: SecurePass123!
+        user_type:
+          type: string
+          enum: [reader, creator]
+          description: 用户类型
+          example: creator
+        agree_terms:
+          type: boolean
+          description: 是否同意服务条款，必须为true
+          example: true
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: 访问令牌
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refresh_token:
+          type: string
+          description: 刷新令牌
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token_type:
+          type: string
+          description: 令牌类型
+          example: Bearer
+        expires_in:
+          type: integer
+          description: 访问令牌过期时间（秒）
+          example: 3600
+
+  responses:
+    Unauthorized:
+      description: 认证失败或令牌无效
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    example: false
+                  error:
+                    example:
+                      code: UNAUTHORIZED
+                      message: 访问令牌无效或已过期
+
+    ValidationError:
+      description: 请求参数验证失败
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/ApiResponse'
+              - type: object
+                properties:
+                  success:
+                    example: false
+                  error:
+                    example:
+                      code: VALIDATION_ERROR
+                      message: 参数验证失败
+                      details:
+                        email: 邮箱格式不正确
+
+tags:
+  - name: 认证授权
+    description: 用户注册、登录、令牌管理相关接口
+  - name: 第三方登录
+    description: 微信、Google、GitHub等第三方平台登录
+  - name: 用户资料
+    description: 个人资料管理、头像上传等功能
+
+paths:
+  /auth/register:
+    post:
+      tags: [认证授权]
+      summary: 用户注册
+      description: 注册新用户账号，支持普通用户和创作者两种类型
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              creator:
+                summary: 创作者注册
+                value:
+                  username: john_creator
+                  email: john@example.com
+                  password: SecurePass123!
+                  user_type: creator
+                  agree_terms: true
+              reader:
+                summary: 读者注册
+                value:
+                  username: jane_reader
+                  email: jane@example.com
+                  password: MyPassword456!
+                  user_type: reader
+                  agree_terms: true
+      responses:
+        '201':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: 用户名或邮箱已存在
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: false
+                      error:
+                        example:
+                          code: CONFLICT
+                          message: 邮箱地址已被注册
+
+  /auth/login:
+    post:
+      tags: [认证授权]
+      summary: 用户登录
+      description: 用户登录验证，返回访问令牌和刷新令牌
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              standard:
+                summary: 标准登录
+                value:
+                  email: john@example.com
+                  password: SecurePass123!
+                  remember_me: false
+              remember:
+                summary: 记住登录
+                value:
+                  email: john@example.com
+                  password: SecurePass123!
+                  remember_me: true
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/TokenResponse'
+                          - type: object
+                            properties:
+                              user:
+                                $ref: '#/components/schemas/User'
+        '401':
+          description: 登录失败
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: false
+                      error:
+                        example:
+                          code: UNAUTHORIZED
+                          message: 邮箱或密码错误
+
+  /auth/logout:
+    post:
+      tags: [认证授权]
+      summary: 用户登出
+      description: 用户登出，使当前令牌失效
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        example:
+                          message: 登出成功
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/refresh:
+    post:
+      tags: [认证授权]
+      summary: 刷新令牌
+      description: 使用刷新令牌获取新的访问令牌
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token:
+                  type: string
+                  description: 刷新令牌
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: 刷新令牌无效或已过期
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: false
+                      error:
+                        example:
+                          code: UNAUTHORIZED
+                          message: 刷新令牌无效或已过期
+
+  /auth/forgot-password:
+    post:
+      tags: [认证授权]
+      summary: 忘记密码
+      description: 发送密码重置邮件到用户邮箱
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 用户邮箱地址
+                  example: john@example.com
+      responses:
+        '200':
+          description: 重置邮件发送成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        example:
+                          message: 密码重置邮件已发送
+                          email: john@example.com
+
+  /users/profile:
+    get:
+      tags: [用户资料]
+      summary: 获取个人资料
+      description: 获取当前用户的详细资料信息
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/User'
+                          - type: object
+                            properties:
+                              stats:
+                                type: object
+                                properties:
+                                  followers_count:
+                                    type: integer
+                                    example: 1250
+                                  following_count:
+                                    type: integer
+                                    example: 180
+                                  articles_count:
+                                    type: integer
+                                    example: 45
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    put:
+      tags: [用户资料]
+      summary: 更新个人资料
+      description: 更新当前用户的资料信息
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                display_name:
+                  type: string
+                  description: 显示名称
+                  example: John Doe
+                bio:
+                  type: string
+                  maxLength: 500
+                  description: 个人简介
+                  example: 分享技术和生活感悟的创作者
+                location:
+                  type: string
+                  description: 所在地
+                  example: 北京, 中国
+                website:
+                  type: string
+                  format: uri
+                  description: 个人网站
+                  example: https://johndoe.com
+                social_links:
+                  type: object
+                  description: 社交链接
+                  properties:
+                    twitter:
+                      type: string
+                      example: johndoe
+                    github:
+                      type: string
+                      example: johndoe
+                    linkedin:
+                      type: string
+                      example: johndoe
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        example:
+                          message: 资料更新成功
+                          updated_fields: [display_name, bio, website]
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /users/avatar:
+    post:
+      tags: [用户资料]
+      summary: 上传头像
+      description: 上传用户头像图片
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [avatar]
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: 头像文件，支持JPG/PNG格式，最大5MB
+      responses:
+        '200':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        example:
+                          message: 头像上传成功
+                          avatar_url: https://cdn.sharestack.com/avatars/12345.jpg
+                          thumbnail_url: https://cdn.sharestack.com/avatars/thumbs/12345.jpg
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          description: 文件格式错误或大小超限
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: false
+                      error:
+                        example:
+                          code: VALIDATION_ERROR
+                          message: 文件格式不支持或大小超过5MB
+
+  /users/{id}:
+    get:
+      tags: [用户资料]
+      summary: 获取用户公开信息
+      description: 获取指定用户的公开资料信息
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: integer
+            example: 12345
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/User'
+                          - type: object
+                            properties:
+                              is_following:
+                                type: boolean
+                                description: 当前用户是否关注此用户
+                                example: false
+                              is_subscribed:
+                                type: boolean
+                                description: 当前用户是否订阅此用户
+                                example: false
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: false
+                      error:
+                        example:
+                          code: NOT_FOUND
+                          message: 用户不存在
+
+  /auth/social/wechat:
+    post:
+      tags: [第三方登录]
+      summary: 微信登录
+      description: 通过微信OAuth进行用户登录或注册
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, state]
+              properties:
+                code:
+                  type: string
+                  description: 微信授权码
+                  example: 061QA7ll2yUOYm0eEvml2Z4kjp3QA7lh
+                state:
+                  type: string
+                  description: 防CSRF状态参数
+                  example: random_state_string
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/TokenResponse'
+                          - type: object
+                            properties:
+                              user:
+                                $ref: '#/components/schemas/User'
+                              is_new_user:
+                                type: boolean
+                                description: 是否是新注册用户
+                                example: false
+
+  /auth/social/google:
+    post:
+      tags: [第三方登录]
+      summary: Google登录
+      description: 通过Google OAuth进行用户登录或注册
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id_token]
+              properties:
+                id_token:
+                  type: string
+                  description: Google ID Token
+                  example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      success:
+                        example: true
+                      data:
+                        allOf:
+                          - $ref: '#/components/schemas/TokenResponse'
+                          - type: object
+                            properties:
+                              user:
+                                $ref: '#/components/schemas/User'
+                              is_new_user:
+                                type: boolean
+                                example: true
