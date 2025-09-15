@@ -1,9 +1,10 @@
 ---
 name: api-docs
-status: backlog
+status: completed
 created: 2025-09-15T01:14:12Z
-updated: 2025-09-15T01:35:43Z
-progress: 0%
+updated: 2025-09-15T02:47:55Z
+progress: 100%
+completed: 2025-09-15T02:47:55Z
 prd: .claude/prds/api-docs.md
 github: https://github.com/rcnn/sharestack/issues/15
 ---

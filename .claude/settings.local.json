@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(grep:*)",
-      "Read(//e/aiwork/vibe/epic-prd/**)"
+      "Read(//e/aiwork/vibe/epic-prd/**)",
+      "Bash(gh issue close:*)"
     ],
     "deny": [],
     "ask": []

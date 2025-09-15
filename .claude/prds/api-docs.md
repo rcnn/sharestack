@@ -1,7 +1,7 @@
 ---
 name: api-docs
 description: ShareStack 知识付费平台后端API接口规范与设计文档
-status: backlog
+status: completed
 created: 2025-09-15T01:07:11Z
 ---
 
