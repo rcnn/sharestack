@@ -3,7 +3,9 @@
     "allow": [
       "Bash(grep:*)",
       "Read(//e/aiwork/vibe/epic-prd/**)",
-      "Bash(gh issue close:*)"
+      "Bash(gh issue close:*)",
+      "Read(//e/aiwork/vibe/epic-backend/**)",
+      "WebFetch(domain:claude.ai)"
     ],
     "deny": [],
     "ask": []
