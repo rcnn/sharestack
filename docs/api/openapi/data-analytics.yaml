@@ -1,0 +1,1143 @@
+openapi: 3.0.3
+info:
+  title: ShareStack 数据分析 API
+  description: |
+    ShareStack 知识付费平台数据分析模块 API 接口文档。
+
+    ## 功能模块
+    - 创作者分析：数据概览、文章分析、收入分析、受众分析、流量分析
+    - 平台监控：平台数据概览、用户行为分析、内容统计分析、收入分析
+    - 通知系统：通知管理、推送设置、设备Token管理
+
+    ## 认证方式
+    所有接口需要在请求头中包含JWT令牌：
+    ```
+    Authorization: Bearer YOUR_ACCESS_TOKEN
+    ```
+
+    ## 数据特性
+    - 时间序列数据支持多种粒度聚合
+    - 关键指标实时更新，延迟 < 5秒
+    - 支持 JSON、CSV、Excel 格式数据导出
+    - 提供标准化图表数据格式
+  version: 1.0.0
+  contact:
+    name: ShareStack Data API Support
+    email: data-api@sharestack.com
+    url: https://sharestack.com/support/data-api
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.sharestack.com/api/v1
+    description: 生产环境
+  - url: https://staging-api.sharestack.com/api/v1
+    description: 测试环境
+  - url: http://localhost:8000/api/v1
+    description: 本地开发环境
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT令牌认证，格式：Bearer {token}
+
+  schemas:
+    # 通用响应结构
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: 请求是否成功
+        data:
+          type: object
+          description: 响应数据
+        error:
+          $ref: '#/components/schemas/Error'
+        meta:
+          $ref: '#/components/schemas/AnalyticsMeta'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 错误代码
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          description: 错误描述
+          example: 参数验证失败
+        details:
+          type: object
+          description: 错误详细信息
+
+    AnalyticsMeta:
+      type: object
+      properties:
+        version:
+          type: string
+          example: v1
+        timestamp:
+          type: string
+          format: date-time
+          example: 2025-09-15T01:07:11Z
+        query_time:
+          type: string
+          description: 查询耗时
+          example: 123ms
+        cache_hit:
+          type: boolean
+          description: 是否命中缓存
+          example: false
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: 当前页码
+          example: 1
+        limit:
+          type: integer
+          description: 每页数量
+          example: 20
+        total:
+          type: integer
+          description: 总记录数
+          example: 156
+        pages:
+          type: integer
+          description: 总页数
+          example: 8
+
+    # 创作者分析数据结构
+    OverviewData:
+      type: object
+      properties:
+        overview:
+          type: object
+          properties:
+            total_articles:
+              type: integer
+              description: 总文章数
+              example: 156
+            total_subscribers:
+              type: integer
+              description: 总订阅者数
+              example: 2847
+            total_revenue:
+              type: number
+              format: float
+              description: 总收入
+              example: 45632.50
+            total_views:
+              type: integer
+              description: 总浏览量
+              example: 128450
+            avg_engagement_rate:
+              type: number
+              format: float
+              description: 平均参与度
+              example: 0.073
+        current_period:
+          type: object
+          properties:
+            articles_published:
+              type: integer
+              example: 8
+            new_subscribers:
+              type: integer
+              example: 234
+            revenue:
+              type: number
+              format: float
+              example: 3456.80
+            views:
+              type: integer
+              example: 12450
+            engagement_rate:
+              type: number
+              format: float
+              example: 0.081
+        trends:
+          type: object
+          properties:
+            subscribers_growth:
+              type: number
+              format: float
+              description: 订阅者增长率
+              example: 0.089
+            revenue_growth:
+              type: number
+              format: float
+              description: 收入增长率
+              example: 0.124
+            views_growth:
+              type: number
+              format: float
+              description: 浏览量增长率
+              example: 0.056
+            engagement_growth:
+              type: number
+              format: float
+              description: 参与度增长率
+              example: 0.092
+
+    ArticleAnalytics:
+      type: object
+      properties:
+        article_id:
+          type: integer
+          description: 文章ID
+          example: 789
+        title:
+          type: string
+          description: 文章标题
+          example: "深入理解机器学习算法"
+        slug:
+          type: string
+          description: 文章URL标识
+          example: "deep-learning-algorithms"
+        published_at:
+          type: string
+          format: date-time
+          description: 发布时间
+          example: "2025-09-10T08:00:00Z"
+        metrics:
+          type: object
+          properties:
+            views:
+              type: integer
+              description: 浏览量
+              example: 2340
+            unique_visitors:
+              type: integer
+              description: 独立访客数
+              example: 1987
+            avg_read_time:
+              type: integer
+              description: 平均阅读时间(秒)
+              example: 420
+            completion_rate:
+              type: number
+              format: float
+              description: 完读率
+              example: 0.67
+            likes:
+              type: integer
+              description: 点赞数
+              example: 156
+            comments:
+              type: integer
+              description: 评论数
+              example: 23
+            shares:
+              type: integer
+              description: 分享数
+              example: 45
+            bookmarks:
+              type: integer
+              description: 收藏数
+              example: 89
+            conversion_rate:
+              type: number
+              format: float
+              description: 转化率
+              example: 0.078
+            revenue:
+              type: number
+              format: float
+              description: 收入
+              example: 567.80
+
+    RevenueAnalytics:
+      type: object
+      properties:
+        revenue_summary:
+          type: object
+          properties:
+            total_revenue:
+              type: number
+              format: float
+              description: 总收入
+              example: 45632.50
+            subscription_revenue:
+              type: number
+              format: float
+              description: 订阅收入
+              example: 38456.20
+            single_article_revenue:
+              type: number
+              format: float
+              description: 单篇文章收入
+              example: 7176.30
+            avg_daily_revenue:
+              type: number
+              format: float
+              description: 日均收入
+              example: 1521.08
+            revenue_growth_rate:
+              type: number
+              format: float
+              description: 收入增长率
+              example: 0.124
+
+    AudienceAnalytics:
+      type: object
+      properties:
+        audience_overview:
+          type: object
+          properties:
+            total_followers:
+              type: integer
+              description: 总关注者数
+              example: 2847
+            active_subscribers:
+              type: integer
+              description: 活跃订阅者数
+              example: 2340
+            avg_engagement_rate:
+              type: number
+              format: float
+              description: 平均参与度
+              example: 0.073
+            churn_rate:
+              type: number
+              format: float
+              description: 流失率
+              example: 0.034
+            ltv:
+              type: number
+              format: float
+              description: 用户生命周期价值
+              example: 156.78
+        demographics:
+          type: object
+          properties:
+            age_distribution:
+              type: object
+              description: 年龄分布
+              additionalProperties:
+                type: number
+                format: float
+            gender_distribution:
+              type: object
+              description: 性别分布
+              additionalProperties:
+                type: number
+                format: float
+            geographic_distribution:
+              type: object
+              description: 地理分布
+              additionalProperties:
+                type: number
+                format: float
+
+    TrafficAnalytics:
+      type: object
+      properties:
+        traffic_overview:
+          type: object
+          properties:
+            total_sessions:
+              type: integer
+              description: 总会话数
+              example: 15678
+            unique_visitors:
+              type: integer
+              description: 独立访客数
+              example: 12340
+            page_views:
+              type: integer
+              description: 页面浏览量
+              example: 45629
+            avg_session_duration:
+              type: integer
+              description: 平均会话时长(秒)
+              example: 420
+            bounce_rate:
+              type: number
+              format: float
+              description: 跳出率
+              example: 0.34
+
+    # 平台监控数据结构
+    PlatformOverview:
+      type: object
+      properties:
+        platform_overview:
+          type: object
+          properties:
+            total_users:
+              type: integer
+              description: 总用户数
+              example: 125680
+            total_creators:
+              type: integer
+              description: 总创作者数
+              example: 8945
+            total_articles:
+              type: integer
+              description: 总文章数
+              example: 45672
+            total_subscriptions:
+              type: integer
+              description: 总订阅数
+              example: 23451
+            platform_revenue:
+              type: number
+              format: float
+              description: 平台收入
+              example: 1234567.89
+            monthly_active_users:
+              type: integer
+              description: 月活跃用户数
+              example: 89456
+
+    # 通知系统数据结构
+    Notification:
+      type: object
+      properties:
+        notification_id:
+          type: integer
+          description: 通知ID
+          example: 12345
+        type:
+          type: string
+          description: 通知类型
+          enum: [system, content, social, payment]
+          example: content
+        title:
+          type: string
+          description: 通知标题
+          example: "您的文章获得了新的评论"
+        content:
+          type: string
+          description: 通知内容
+          example: "用户 @john_doe 对您的文章《深入理解机器学习》发表了评论"
+        is_read:
+          type: boolean
+          description: 是否已读
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+          example: "2025-09-15T08:30:00Z"
+        action_url:
+          type: string
+          description: 操作链接
+          example: "/articles/789#comment-456"
+        metadata:
+          type: object
+          description: 元数据
+          properties:
+            article_id:
+              type: integer
+              example: 789
+            comment_id:
+              type: integer
+              example: 456
+            user_id:
+              type: integer
+              example: 234
+
+    NotificationSettings:
+      type: object
+      properties:
+        push_settings:
+          type: object
+          properties:
+            email_notifications:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  example: true
+                types:
+                  type: object
+                  properties:
+                    new_follower:
+                      type: boolean
+                      example: true
+                    article_comment:
+                      type: boolean
+                      example: true
+                    article_like:
+                      type: boolean
+                      example: false
+                    subscription_reminder:
+                      type: boolean
+                      example: true
+                    system_updates:
+                      type: boolean
+                      example: true
+                frequency:
+                  type: string
+                  enum: [immediate, daily_digest, weekly_summary]
+                  example: immediate
+            push_notifications:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  example: true
+                types:
+                  type: object
+                  properties:
+                    new_follower:
+                      type: boolean
+                      example: true
+                    article_comment:
+                      type: boolean
+                      example: true
+                    article_like:
+                      type: boolean
+                      example: false
+        quiet_hours:
+          type: object
+          properties:
+            enabled:
+              type: boolean
+              example: true
+            start_time:
+              type: string
+              example: "22:00"
+            end_time:
+              type: string
+              example: "08:00"
+            timezone:
+              type: string
+              example: "Asia/Shanghai"
+
+    PushToken:
+      type: object
+      properties:
+        token_id:
+          type: integer
+          description: Token ID
+          example: 789
+        token:
+          type: string
+          description: 设备推送Token
+          example: "device_push_token_string"
+        platform:
+          type: string
+          description: 平台类型
+          enum: [ios, android, web]
+          example: ios
+        registered_at:
+          type: string
+          format: date-time
+          description: 注册时间
+          example: "2025-09-15T01:07:11Z"
+        is_active:
+          type: boolean
+          description: 是否活跃
+          example: true
+
+  parameters:
+    TimeRange:
+      name: time_range
+      in: query
+      description: 时间范围
+      required: false
+      schema:
+        type: string
+        enum: [7d, 30d, 90d, 1y]
+        default: 30d
+
+    Page:
+      name: page
+      in: query
+      description: 页码
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+    Limit:
+      name: limit
+      in: query
+      description: 每页数量
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+    NotificationId:
+      name: notification_id
+      in: path
+      description: 通知ID
+      required: true
+      schema:
+        type: integer
+
+security:
+  - bearerAuth: []
+
+paths:
+  # 创作者分析接口
+  /analytics/overview:
+    get:
+      summary: 获取数据概览
+      description: 获取创作者个人数据概览，包括核心指标和趋势数据
+      tags:
+        - 创作者分析
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: timezone
+          in: query
+          description: 时区
+          required: false
+          schema:
+            type: string
+            default: UTC+8
+      responses:
+        '200':
+          description: 成功获取数据概览
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OverviewData'
+        '401':
+          description: 认证失败
+        '403':
+          description: 权限不足
+        '500':
+          description: 服务器内部错误
+
+  /analytics/articles:
+    get:
+      summary: 获取文章分析
+      description: 获取文章性能分析数据，包括阅读量、互动数据和转化指标
+      tags:
+        - 创作者分析
+      parameters:
+        - name: article_id
+          in: query
+          description: 特定文章ID
+          required: false
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/TimeRange'
+        - name: metric
+          in: query
+          description: 指标类型
+          required: false
+          schema:
+            type: string
+            enum: [views, engagement, revenue, all]
+            default: all
+        - name: sort_by
+          in: query
+          description: 排序字段
+          required: false
+          schema:
+            type: string
+            enum: [views, likes, revenue, published_at]
+        - name: sort_order
+          in: query
+          description: 排序方向
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 成功获取文章分析数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          articles:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ArticleAnalytics'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+
+  /analytics/revenue:
+    get:
+      summary: 获取收入分析
+      description: 获取创作者收入分析数据，包括订阅收入、单篇收入和趋势预测
+      tags:
+        - 创作者分析
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: granularity
+          in: query
+          description: 时间粒度
+          required: false
+          schema:
+            type: string
+            enum: [hour, day, week, month]
+            default: day
+        - name: currency
+          in: query
+          description: 货币单位
+          required: false
+          schema:
+            type: string
+            enum: [CNY, USD]
+            default: CNY
+        - name: include_prediction
+          in: query
+          description: 是否包含预测数据
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: 成功获取收入分析数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RevenueAnalytics'
+
+  /analytics/audience:
+    get:
+      summary: 获取受众分析
+      description: 获取受众行为分析数据，包括人口统计、行为模式和兴趣分析
+      tags:
+        - 创作者分析
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: segment
+          in: query
+          description: 受众细分
+          required: false
+          schema:
+            type: string
+            enum: [all, subscribers, readers]
+            default: all
+      responses:
+        '200':
+          description: 成功获取受众分析数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AudienceAnalytics'
+
+  /analytics/traffic:
+    get:
+      summary: 获取流量分析
+      description: 获取流量来源分析数据，包括渠道分析、设备统计和用户行为路径
+      tags:
+        - 创作者分析
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: metric
+          in: query
+          description: 指标类型
+          required: false
+          schema:
+            type: string
+            enum: [sessions, users, pageviews]
+            default: sessions
+      responses:
+        '200':
+          description: 成功获取流量分析数据
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TrafficAnalytics'
+
+  # 平台监控接口（需要管理员权限）
+  /admin/analytics/platform:
+    get:
+      summary: 获取平台数据概览
+      description: 获取平台整体数据概览，包括用户增长、内容统计和收入指标
+      tags:
+        - 平台监控
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: include_trends
+          in: query
+          description: 是否包含趋势数据
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: 成功获取平台数据概览
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PlatformOverview'
+        '403':
+          description: 需要管理员权限
+
+  /admin/analytics/users:
+    get:
+      summary: 获取用户行为分析
+      description: 获取平台用户行为分析数据，包括用户活跃度、留存率和行为模式
+      tags:
+        - 平台监控
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: user_type
+          in: query
+          description: 用户类型
+          required: false
+          schema:
+            type: string
+            enum: [all, creators, readers]
+            default: all
+        - name: metric
+          in: query
+          description: 主要指标
+          required: false
+          schema:
+            type: string
+            enum: [activity, retention, engagement]
+      responses:
+        '200':
+          description: 成功获取用户行为分析数据
+        '403':
+          description: 需要管理员权限
+
+  /admin/analytics/content:
+    get:
+      summary: 获取内容统计分析
+      description: 获取平台内容统计分析数据，包括内容质量、分类分布和性能指标
+      tags:
+        - 平台监控
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: content_type
+          in: query
+          description: 内容类型
+          required: false
+          schema:
+            type: string
+            enum: [articles, videos, audio]
+            default: articles
+      responses:
+        '200':
+          description: 成功获取内容统计分析数据
+        '403':
+          description: 需要管理员权限
+
+  /admin/analytics/revenue:
+    get:
+      summary: 获取平台收入分析
+      description: 获取平台收入分析数据，包括总收入、佣金分成和增长趋势
+      tags:
+        - 平台监控
+      parameters:
+        - $ref: '#/components/parameters/TimeRange'
+        - name: currency
+          in: query
+          description: 货币单位
+          required: false
+          schema:
+            type: string
+            enum: [CNY, USD]
+            default: CNY
+        - name: breakdown
+          in: query
+          description: 分解维度
+          required: false
+          schema:
+            type: string
+            enum: [creator, category, plan]
+            default: creator
+      responses:
+        '200':
+          description: 成功获取平台收入分析数据
+        '403':
+          description: 需要管理员权限
+
+  # 通知系统接口
+  /notifications:
+    get:
+      summary: 获取通知列表
+      description: 获取用户通知列表，支持分页和状态筛选
+      tags:
+        - 通知系统
+      parameters:
+        - name: status
+          in: query
+          description: 通知状态
+          required: false
+          schema:
+            type: string
+            enum: [all, unread, read]
+            default: all
+        - name: type
+          in: query
+          description: 通知类型
+          required: false
+          schema:
+            type: string
+            enum: [system, content, social, payment]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 成功获取通知列表
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          notifications:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Notification'
+                          summary:
+                            type: object
+                            properties:
+                              total_notifications:
+                                type: integer
+                                example: 156
+                              unread_count:
+                                type: integer
+                                example: 23
+                              today_count:
+                                type: integer
+                                example: 8
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+
+  /notifications/{notification_id}/read:
+    put:
+      summary: 标记通知已读
+      description: 标记单个通知为已读状态
+      tags:
+        - 通知系统
+      parameters:
+        - $ref: '#/components/parameters/NotificationId'
+      responses:
+        '200':
+          description: 成功标记为已读
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          notification_id:
+                            type: integer
+                            example: 12345
+                          is_read:
+                            type: boolean
+                            example: true
+                          read_at:
+                            type: string
+                            format: date-time
+                            example: "2025-09-15T01:07:11Z"
+        '404':
+          description: 通知不存在
+
+  /notifications/read-all:
+    put:
+      summary: 全部标记已读
+      description: 将所有未读通知标记为已读
+      tags:
+        - 通知系统
+      responses:
+        '200':
+          description: 成功标记全部已读
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          marked_count:
+                            type: integer
+                            description: 标记数量
+                            example: 23
+                          operation_time:
+                            type: string
+                            format: date-time
+                            example: "2025-09-15T01:07:11Z"
+
+  /notification-settings:
+    get:
+      summary: 获取推送设置
+      description: 获取用户的通知推送设置
+      tags:
+        - 通知系统
+      responses:
+        '200':
+          description: 成功获取推送设置
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NotificationSettings'
+    put:
+      summary: 更新推送设置
+      description: 更新用户的通知推送设置
+      tags:
+        - 通知系统
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationSettings'
+      responses:
+        '200':
+          description: 成功更新推送设置
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          settings_updated:
+                            type: boolean
+                            example: true
+                          updated_at:
+                            type: string
+                            format: date-time
+                            example: "2025-09-15T01:07:11Z"
+
+  /push-tokens:
+    post:
+      summary: 注册推送Token
+      description: 注册设备推送Token，用于移动端推送
+      tags:
+        - 通知系统
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: 设备推送Token
+                  example: "device_push_token_string"
+                platform:
+                  type: string
+                  description: 平台类型
+                  enum: [ios, android, web]
+                  example: ios
+                device_info:
+                  type: object
+                  properties:
+                    device_id:
+                      type: string
+                      description: 设备唯一标识
+                      example: "unique_device_identifier"
+                    app_version:
+                      type: string
+                      description: 应用版本
+                      example: "1.0.0"
+                    os_version:
+                      type: string
+                      description: 操作系统版本
+                      example: "iOS 17.0"
+              required:
+                - token
+                - platform
+      responses:
+        '201':
+          description: 成功注册推送Token
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PushToken'
+
+  /push-tokens/{token}:
+    delete:
+      summary: 删除推送Token
+      description: 删除指定的设备推送Token
+      tags:
+        - 通知系统
+      parameters:
+        - name: token
+          in: path
+          description: 推送Token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功删除推送Token
+        '404':
+          description: Token不存在
+
+tags:
+  - name: 创作者分析
+    description: 创作者个人数据分析功能
+  - name: 平台监控
+    description: 平台整体数据监控功能（需要管理员权限）
+  - name: 通知系统
+    description: 通知管理和推送设置功能
