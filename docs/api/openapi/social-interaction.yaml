@@ -1,0 +1,1328 @@
+openapi: 3.0.3
+info:
+  title: ShareStack 社交互动 API
+  description: ShareStack知识付费平台社交互动模块API规范，包括关注关系、内容互动、评论系统和内容发现推荐功能
+  version: 1.0.0
+  contact:
+    name: ShareStack API Team
+    email: api@sharestack.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.sharestack.com/v1
+    description: 生产环境
+  - url: https://staging-api.sharestack.com/v1
+    description: 测试环境
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: 社交关系
+    description: 用户关注和粉丝管理
+  - name: 互动功能
+    description: 点赞、收藏、分享功能
+  - name: 评论系统
+    description: 多层级评论和回复
+  - name: 内容发现
+    description: 搜索、推荐和内容浏览
+
+paths:
+  # 社交关系接口
+  /follows:
+    post:
+      tags: [社交关系]
+      summary: 关注用户
+      description: 创建用户关注关系
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target_user_id]
+              properties:
+                target_user_id:
+                  type: integer
+                  description: 被关注用户ID
+                  example: 123
+                notification_enabled:
+                  type: boolean
+                  description: 是否启用通知
+                  default: true
+      responses:
+        '201':
+          description: 关注成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/AlreadyFollowed'
+
+  /follows/{user_id}:
+    delete:
+      tags: [社交关系]
+      summary: 取消关注
+      description: 删除用户关注关系
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 被取消关注的用户ID
+      responses:
+        '200':
+          description: 取消关注成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/followers:
+    get:
+      tags: [社交关系]
+      summary: 获取关注者列表
+      description: 获取指定用户的粉丝列表
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 用户ID
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [follow_time_desc, follow_time_asc]
+            default: follow_time_desc
+          description: 排序方式
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowersResponse'
+
+  /users/{id}/following:
+    get:
+      tags: [社交关系]
+      summary: 获取关注列表
+      description: 获取指定用户关注的人员列表
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 用户ID
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [follow_time_desc, follow_time_asc]
+            default: follow_time_desc
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowingResponse'
+
+  # 互动功能接口
+  /articles/{id}/like:
+    post:
+      tags: [互动功能]
+      summary: 点赞文章
+      description: 对文章进行点赞操作
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 文章ID
+      responses:
+        '201':
+          description: 点赞成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LikeResponse'
+        '409':
+          description: 已经点赞过
+    delete:
+      tags: [互动功能]
+      summary: 取消点赞
+      description: 取消对文章的点赞
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 文章ID
+      responses:
+        '200':
+          description: 取消点赞成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnlikeResponse'
+
+  /articles/{id}/bookmark:
+    post:
+      tags: [互动功能]
+      summary: 收藏文章
+      description: 将文章添加到个人收藏
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 文章ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection_id:
+                  type: integer
+                  description: 收藏夹ID
+                notes:
+                  type: string
+                  maxLength: 500
+                  description: 个人笔记
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: 标签列表
+      responses:
+        '201':
+          description: 收藏成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkResponse'
+    delete:
+      tags: [互动功能]
+      summary: 取消收藏
+      description: 从收藏中移除文章
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 文章ID
+      responses:
+        '200':
+          description: 取消收藏成功
+
+  /users/bookmarks:
+    get:
+      tags: [互动功能]
+      summary: 获取个人收藏列表
+      description: 获取用户的收藏文章列表
+      parameters:
+        - name: collection_id
+          in: query
+          schema:
+            type: integer
+          description: 收藏夹ID筛选
+        - name: tags
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: false
+          description: 标签筛选
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [bookmark_time_desc, bookmark_time_asc, article_popularity]
+            default: bookmark_time_desc
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarksListResponse'
+
+  # 评论系统接口
+  /articles/{id}/comments:
+    post:
+      tags: [评论系统]
+      summary: 创建评论
+      description: 对文章发表评论或回复
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 文章ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  description: 评论内容
+                parent_id:
+                  type: integer
+                  description: 父评论ID (回复时使用)
+                mentions:
+                  type: array
+                  items:
+                    type: integer
+                  description: @提及的用户ID列表
+                reply_to_user_id:
+                  type: integer
+                  description: 回复的目标用户ID
+      responses:
+        '201':
+          description: 评论创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    get:
+      tags: [评论系统]
+      summary: 获取评论列表
+      description: 获取文章的评论列表
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 文章ID
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, oldest, most_liked, most_replied]
+            default: newest
+        - name: include_replies
+          in: query
+          schema:
+            type: boolean
+            default: true
+          description: 是否包含回复
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsListResponse'
+
+  /comments/{id}:
+    put:
+      tags: [评论系统]
+      summary: 更新评论
+      description: 编辑已发表的评论
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 评论ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+                  description: 更新后的评论内容
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    delete:
+      tags: [评论系统]
+      summary: 删除评论
+      description: 删除评论 (仅作者或管理员)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 评论ID
+      responses:
+        '200':
+          description: 删除成功
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /comments/{id}/like:
+    post:
+      tags: [评论系统]
+      summary: 点赞评论
+      description: 对评论进行点赞
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 评论ID
+      responses:
+        '201':
+          description: 点赞成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentLikeResponse'
+
+  /comments/{id}/report:
+    post:
+      tags: [评论系统]
+      summary: 举报评论
+      description: 举报不当评论
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: 评论ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportRequest'
+      responses:
+        '201':
+          description: 举报成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+
+  # 内容发现接口
+  /search:
+    get:
+      tags: [内容发现]
+      summary: 全文搜索
+      description: 搜索文章、用户和标签
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+          description: 搜索关键词
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [articles, users, tags, all]
+            default: all
+          description: 搜索类型
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: 分类筛选
+        - name: author_id
+          in: query
+          schema:
+            type: integer
+          description: 作者筛选
+        - name: date_range
+          in: query
+          schema:
+            type: string
+            enum: [week, month, year, custom]
+          description: 日期范围
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [relevance, date, popularity]
+            default: relevance
+          description: 排序方式
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: 搜索成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+
+  /search/suggestions:
+    get:
+      tags: [内容发现]
+      summary: 搜索建议
+      description: 获取搜索自动补全建议
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 输入的关键词
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [keywords, users, tags]
+            default: keywords
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 10
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionsResponse'
+
+  /search/trending:
+    get:
+      tags: [内容发现]
+      summary: 热门搜索
+      description: 获取热门搜索关键词
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendingSearchResponse'
+
+  /recommendations/feed:
+    get:
+      tags: [内容发现]
+      summary: 个性化推荐
+      description: 基于用户行为的个性化内容推荐
+      parameters:
+        - name: algorithm
+          in: query
+          schema:
+            type: string
+            enum: [collaborative, content_based, hybrid]
+            default: hybrid
+        - name: diversity
+          in: query
+          schema:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+            default: 0.7
+          description: 多样性系数
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: 推荐成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+
+  /recommendations/trending:
+    get:
+      tags: [内容发现]
+      summary: 热门内容
+      description: 获取平台热门内容
+      parameters:
+        - name: time_range
+          in: query
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: week
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: 分类筛选
+        - name: metric
+          in: query
+          schema:
+            type: string
+            enum: [views, likes, comments, bookmarks, overall]
+            default: overall
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendingContentResponse'
+
+  /recommendations/creators:
+    get:
+      tags: [内容发现]
+      summary: 推荐创作者
+      description: 推荐值得关注的创作者
+      parameters:
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: 推荐成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendedCreatorsResponse'
+
+  /recommendations/similar:
+    get:
+      tags: [内容发现]
+      summary: 相似内容推荐
+      description: 基于当前文章推荐相似内容
+      parameters:
+        - name: article_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: 当前文章ID
+        - name: similarity_threshold
+          in: query
+          schema:
+            type: number
+            minimum: 0.0
+            maximum: 1.0
+            default: 0.6
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 20
+            default: 10
+      responses:
+        '200':
+          description: 推荐成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarContentResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: 页码
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: 每页数量
+
+  schemas:
+    # 通用响应结构
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        meta:
+          type: object
+          properties:
+            version:
+              type: string
+              example: "v1"
+            timestamp:
+              type: string
+              format: date-time
+            request_id:
+              type: string
+
+    SuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                message:
+                  type: string
+
+    ErrorResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            data:
+              type: object
+              nullable: true
+            error:
+              type: object
+              properties:
+                code:
+                  type: string
+                message:
+                  type: string
+                details:
+                  type: object
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+
+    # 用户相关模型
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        display_name:
+          type: string
+        avatar_url:
+          type: string
+        is_verified:
+          type: boolean
+
+    UserProfile:
+      allOf:
+        - $ref: '#/components/schemas/UserSummary'
+        - type: object
+          properties:
+            bio:
+              type: string
+            follower_count:
+              type: integer
+            following_count:
+              type: integer
+            article_count:
+              type: integer
+
+    # 关注相关模型
+    FollowResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: integer
+                follower_id:
+                  type: integer
+                following_id:
+                  type: integer
+                notification_enabled:
+                  type: boolean
+                created_at:
+                  type: string
+                  format: date-time
+
+    FollowersResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                followers:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: '#/components/schemas/UserProfile'
+                      - type: object
+                        properties:
+                          followed_at:
+                            type: string
+                            format: date-time
+                          mutual_follow:
+                            type: boolean
+            meta:
+              type: object
+              properties:
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+
+    FollowingResponse:
+      $ref: '#/components/schemas/FollowersResponse'
+
+    # 点赞收藏相关模型
+    LikeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                like_id:
+                  type: integer
+                article_id:
+                  type: integer
+                user_id:
+                  type: integer
+                created_at:
+                  type: string
+                  format: date-time
+                total_likes:
+                  type: integer
+
+    UnlikeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                message:
+                  type: string
+                total_likes:
+                  type: integer
+
+    BookmarkResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                bookmark_id:
+                  type: integer
+                article_id:
+                  type: integer
+                user_id:
+                  type: integer
+                collection_id:
+                  type: integer
+                notes:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                created_at:
+                  type: string
+                  format: date-time
+
+    BookmarksListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                bookmarks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      bookmark_id:
+                        type: integer
+                      article:
+                        $ref: '#/components/schemas/ArticleSummary'
+                      notes:
+                        type: string
+                      tags:
+                        type: array
+                        items:
+                          type: string
+                      bookmarked_at:
+                        type: string
+                        format: date-time
+
+    # 文章相关模型
+    ArticleSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        excerpt:
+          type: string
+        author:
+          $ref: '#/components/schemas/UserSummary'
+        cover_image:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        reading_time:
+          type: integer
+        like_count:
+          type: integer
+        bookmark_count:
+          type: integer
+        comment_count:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    # 评论相关模型
+    CommentResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Comment'
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        article_id:
+          type: integer
+        user_id:
+          type: integer
+        content:
+          type: string
+        parent_id:
+          type: integer
+          nullable: true
+        reply_to_user_id:
+          type: integer
+          nullable: true
+        mentions:
+          type: array
+          items:
+            type: integer
+        like_count:
+          type: integer
+        reply_count:
+          type: integer
+        status:
+          type: string
+          enum: [published, pending, rejected]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        is_liked:
+          type: boolean
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentsListResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                comments:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Comment'
+            meta:
+              type: object
+              properties:
+                pagination:
+                  $ref: '#/components/schemas/Pagination'
+
+    CommentLikeResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                like_id:
+                  type: integer
+                comment_id:
+                  type: integer
+                total_likes:
+                  type: integer
+
+    # 举报相关模型
+    ReportRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          enum: [spam, harassment, inappropriate_content, copyright_violation, misinformation]
+        description:
+          type: string
+          maxLength: 500
+        category:
+          type: string
+        evidence_urls:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    ReportResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                report_id:
+                  type: integer
+                status:
+                  type: string
+                  enum: [pending, reviewing, resolved]
+                created_at:
+                  type: string
+                  format: date-time
+
+    # 搜索相关模型
+    SearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                results:
+                  type: object
+                  properties:
+                    articles:
+                      type: array
+                      items:
+                        allOf:
+                          - $ref: '#/components/schemas/ArticleSummary'
+                          - type: object
+                            properties:
+                              relevance_score:
+                                type: number
+                    users:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/UserProfile'
+                    tags:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          article_count:
+                            type: integer
+                          follower_count:
+                            type: integer
+                suggestions:
+                  type: array
+                  items:
+                    type: string
+                total_results:
+                  type: object
+                  properties:
+                    articles:
+                      type: integer
+                    users:
+                      type: integer
+                    tags:
+                      type: integer
+
+    SuggestionsResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                suggestions:
+                  type: array
+                  items:
+                    type: string
+
+    TrendingSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                trending_keywords:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      keyword:
+                        type: string
+                      search_count:
+                        type: integer
+                      trend_score:
+                        type: number
+
+    # 推荐相关模型
+    RecommendationResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                recommendations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      article:
+                        $ref: '#/components/schemas/ArticleSummary'
+                      recommendation_score:
+                        type: number
+                      reason:
+                        type: string
+                      algorithm:
+                        type: string
+                algorithm_info:
+                  type: object
+                  properties:
+                    primary_algorithm:
+                      type: string
+                    factors:
+                      type: array
+                      items:
+                        type: string
+                    diversity_score:
+                      type: number
+
+    TrendingContentResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                trending_articles:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: '#/components/schemas/ArticleSummary'
+                      - type: object
+                        properties:
+                          trend_score:
+                            type: number
+                          rank:
+                            type: integer
+
+    RecommendedCreatorsResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                creators:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: '#/components/schemas/UserProfile'
+                      - type: object
+                        properties:
+                          recommendation_score:
+                            type: number
+                          reason:
+                            type: string
+
+    SimilarContentResponse:
+      allOf:
+        - $ref: '#/components/schemas/BaseResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                similar_articles:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: '#/components/schemas/ArticleSummary'
+                      - type: object
+                        properties:
+                          similarity_score:
+                            type: number
+
+  responses:
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            data: null
+            error:
+              code: "VALIDATION_ERROR"
+              message: "请求参数验证失败"
+              details:
+                field: "target_user_id"
+                message: "用户ID必须是正整数"
+
+    Unauthorized:
+      description: 未授权访问
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "UNAUTHORIZED"
+              message: "访问令牌无效或已过期"
+
+    Forbidden:
+      description: 权限不足
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "PERMISSION_DENIED"
+              message: "权限不足，无法执行此操作"
+
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "USER_NOT_FOUND"
+              message: "用户不存在"
+
+    AlreadyFollowed:
+      description: 已经关注该用户
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "ALREADY_FOLLOWED"
+              message: "已经关注该用户"
+
+    RateLimited:
+      description: 请求频率超限
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error:
+              code: "RATE_LIMIT_EXCEEDED"
+              message: "操作过于频繁，请稍后再试"
