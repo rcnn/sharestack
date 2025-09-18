@@ -155,3 +155,7 @@ This keeps the main conversation context clean while doing complex work.
 - Commands can spawn agents for context preservation
 - All PM commands (`/pm:*`) are documented in the main README
 - Commands follow rules defined in `/rules/`
+
+
+
+
