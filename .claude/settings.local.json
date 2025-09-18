@@ -6,7 +6,9 @@
       "Bash(gh issue close:*)",
       "Read(//e/aiwork/vibe/epic-backend/**)",
       "WebFetch(domain:claude.ai)",
-      "mcp__sequential-thinking__sequentialthinking"
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
