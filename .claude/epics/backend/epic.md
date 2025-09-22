@@ -1,10 +1,10 @@
 ---
 name: backend
 status: backlog
-updated: 2025-09-15T05:08:03Z
+updated: 2025-09-22T12:30:00Z
 progress: 0%
 prd: .claude/prds/backend.md
-github: https://github.com/rcnn/sharestack/issues/21
+github: https://github.com/rcnn/sharestack/issues/132
 ---
 
 # Epic: Backend
